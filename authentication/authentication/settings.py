@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # Local Apps
     'core',
+    'accounts',
 ]
 
 REST_FRAMEWORK = {
@@ -67,7 +68,7 @@ ROOT_URLCONF = 'authentication.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
