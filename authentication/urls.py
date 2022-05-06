@@ -20,6 +20,6 @@ app_name = 'authentication'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('hello/', include('core.urls'), name="hello"),
+    path('api/', include('core.urls'), name="api"),
     path('accounts/', include('accounts.urls'), name='accounts'),
 ]
