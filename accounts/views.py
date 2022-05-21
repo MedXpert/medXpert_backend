@@ -35,3 +35,7 @@ def login_page(request):
             return render(request, 'accounts/login.html')
     context = {}
     return render(request, 'accounts/login.html', context)
+
+def logout_user(request):
+    logout(request)
+    return redirect('authentication:api')
