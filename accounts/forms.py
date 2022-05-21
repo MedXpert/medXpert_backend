@@ -66,12 +66,12 @@ class CreateUserRating(ModelForm): # userID and healthFacilityID are foreignkeys
 class CreateUserReview(ModelForm): # foreignkey = userID, healthFacilityID
     class Meta:
         model = UserReview
-        fields = ['userID', 'healthCareFacilityID', 'review', 'healthFacilityType', 'creationDateTime', 'lastUpdateTime']
+        fields = ['userID', 'healthFacilityID', 'review', 'healthFacilityType', 'creationDateTime', 'lastUpdateTime']
 
 class CreateReviewComment(ModelForm): #foreignkey = commenterID, UserReviewID
     class Meta:
         model = ReviewComment
-        fields = ['commenterID', 'UserReviewID', 'comment', 'creationDateTime', 'lastUpdatetime']
+        fields = ['commenterID', 'UserReviewID', 'comment', 'creationDateTime', 'lastUpdateTime']
 
 class CreateAmbulanceService(ModelForm):
     class Meta:

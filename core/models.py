@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import datetime
 from phonenumber_field.modelfields import PhoneNumberField
+from django.utils import timezone
 
 class Task(models.Model):
     title = models.CharField(max_length=200)
@@ -78,7 +79,7 @@ class HealthFacilityAccount(models.Model):
 class HealthCareFacility(models.Model):
     name = models.CharField(max_length=100)
     branch = models.CharField(max_length=100)
-    desctiption = models.CharField(max_length=500)
+    description = models.CharField(max_length=500)
     address = models.ForeignKey(Admin, on_delete=models.CASCADE)
     averageRating = models.FloatField()
     GPSCoordinates = models.CharField(max_length=100)
@@ -174,7 +175,7 @@ class ClaimRequest(models.Model):
     attachment = models.FileField()
     status = models.CharField(max_length=50)
     isDone = models.CharField(max_length=50)
-    dateTime = models.DateTimeField(auto_now_add=True)
+    dateTime = models.DateTimeField(default=timezone.now)
     cancelDateTime = models.DateTimeField()
 
 class Automations(models.Model):

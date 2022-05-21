@@ -9,13 +9,22 @@ router = routers.DefaultRouter()
 router.register(r'Users', views.UsersViewSet)
 router.register(r'HealthProfile', views.HealthProfileViewSet)
 router.register(r'Address', views.AddressViewSet)
+router.register(r'Admin', views.AdminViewSet)
+router.register(r'HealthFacilityAccount', views.HealthFacilityAccountViewSet)
+router.register(r'HealthCareFacility', views.HealthCareFacilityViewSet)
+router.register(r'Appointment', views.AppointmentViewSet)
+router.register(r'UserRating', views.UserRatingViewSet)
+router.register(r'UserReview', views.UserReviewViewSet)
+router.register(r'ReviewComment', views.ReviewCommentViewSet)
+router.register(r'AmbulanceService', views.AmbulanceServiceViewSet)
+router.register(r'Ambulance', views.AmbulanceViewSet)
+router.register(r'HealthCareService', views.HealthCareServiceViewSet)
+router.register(r'ClaimRequest', views.ClaimRequestViewSet)
+router.register(r'Automations', views.AutomationsViewSet)
+router.register(r'HeartRateHistory', views.HeartRateHistoryViewSet)
+router.register(r'SleepHistory', views.SleepHistoryViewSet)
 
 urlpatterns = [
-    #path('', views.apiView.as_view(), name='api'),
-    #path('', views.apiView, name='api'),
-    #path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
-    #path('users-list/', views.userView.as_view(), name='users-list'),
-    #path('users-detail/<str:pk>/', views.detailView.as_view(), name='users-detail'),
     path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
