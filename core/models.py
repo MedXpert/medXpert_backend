@@ -78,7 +78,7 @@ class HealthFacilityAccount(models.Model):
 class HealthCareFacility(models.Model):
     name = models.CharField(max_length=100)
     branch = models.CharField(max_length=100)
-    descriptioni = models.CharField(max_length=500)
+    desctiption = models.CharField(max_length=500)
     address = models.ForeignKey(Admin, on_delete=models.CASCADE)
     averageRating = models.FloatField()
     GPSCoordinates = models.CharField(max_length=100)
@@ -160,7 +160,7 @@ class Ambulance(models.Model):
     additionalAttributes = models.CharField(max_length=500)
 
 class HealthCareService(models.Model):
-    HealthCareFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    healthCareFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
     service = models.CharField(max_length=100)
     Row3 = models.CharField(max_length=100)
 
