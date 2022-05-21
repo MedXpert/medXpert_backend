@@ -20,7 +20,7 @@ class HealthProfile(models.Model):
     healthConditions = models.CharField(max_length=500)
 
     def __str__(self):
-        return "weight: " + self.weight + ", height: " +  self.height
+        return self.healthConditions
 
 class Address(models.Model):
     houseNumber = models.CharField(max_length=10)

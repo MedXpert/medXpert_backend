@@ -3,10 +3,32 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
-from .forms import CreateUserForm
+from .forms import CreateUserForm, CreateHealthProfile, CreateAddress
 
 
 # Create your views here.
+def createHealthProfile(request):
+    form = CreateHealthProfile()
+    if request.method == 'POST':
+        form = CreateHealthProfile(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('createAddress')
+    
+    context = {'form':form}
+    return render(request, 'accounts/createHealthProfile.html', context)
+
+def createAddress(request):
+    form = CreateAddress()
+    if request.method == 'POST':
+        form = CreateAddress(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('signup')
+    
+    context = {'form':form}
+    return render(request, 'accounts/createAddress.html', context)
+
 def signup_page(request):
     form = CreateUserForm()
 
