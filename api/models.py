@@ -67,7 +67,7 @@ class Admin(models.Model):
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
 
 class HealthFacilityAccount(models.Model):
-    healthFacilityOrAmbulanceID = models.ForeignKey('core.AmbulanceService', on_delete=models.CASCADE)
+    healthFacilityOrAmbulanceID = models.ForeignKey('api.AmbulanceService', on_delete=models.CASCADE)
     healthFacilityType =  models.CharField(max_length=100)
     username =  models.CharField(max_length=50, unique=True)
     email =  models.CharField(max_length=100)
