@@ -34,13 +34,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     uid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4, verbose_name='Public identifier')
     email = models.EmailField(unique=True)
     username = None
-    firstName = models.CharField(max_length=30, blank=True)
-    lastName = models.CharField(max_length=50, blank=True)
+    firstName = models.CharField(max_length=30)
+    lastName = models.CharField(max_length=30)
     phoneNumber = models.CharField(max_length=10, blank=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default=MALE, null=True)
     dateOfBirth = models.DateField(blank=True, null=True)
     # profilePicture = models.ImageField(upload_to='profile_pics', blank=True)
-    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, blank=True, null=True, default=3)
+    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, null=True,default=USER)
     isActive = models.BooleanField(default=True)
     isDeleted = models.BooleanField(default=False)
     createdDate = models.DateTimeField(default=timezone.now)
@@ -51,6 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
     
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
     class Meta:
         verbose_name = 'user'
         verbose_name_plural = 'users'
