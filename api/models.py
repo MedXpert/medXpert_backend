@@ -33,12 +33,12 @@ class User(AbstractBaseUser, PermissionsMixin):
      # Roles created here
     uid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4, verbose_name='Public identifier')
     email = models.EmailField(unique=True)
-    username = models.CharField(unique=True, max_length=255)
+    username = None
     firstName = models.CharField(max_length=30, blank=True)
     lastName = models.CharField(max_length=50, blank=True)
     phoneNumber = models.CharField(max_length=10, blank=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default=MALE, null=True)
-    dateOfBirth = models.DateField(blank=True)
+    dateOfBirth = models.DateField(blank=True, null=True)
     # profilePicture = models.ImageField(upload_to='profile_pics', blank=True)
     role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, blank=True, null=True, default=3)
     isActive = models.BooleanField(default=True)
