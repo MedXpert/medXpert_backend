@@ -10,10 +10,10 @@ from .manager import CustomUserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
 
-    ADMIN = 1
-    HEALTHFACILITY = 2
-    AMBULANCE = 3
-    USER = 4
+    ADMIN = 'ad'
+    HEALTHFACILITY = 'h'
+    AMBULANCE = 'am'
+    USER = 'u'
 
     ROLE_CHOICES = (
         (ADMIN, 'Admin'),
