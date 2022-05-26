@@ -40,7 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default=MALE, null=True)
     dateOfBirth = models.DateField(blank=True, null=True)
     # profilePicture = models.ImageField(upload_to='profile_pics', blank=True)
-    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, null=True,default=USER)
+    role = models.CharField(choices=ROLE_CHOICES, null=True, default=USER, max_length=3)
     isActive = models.BooleanField(default=True)
     isDeleted = models.BooleanField(default=False)
     createdDate = models.DateTimeField(default=timezone.now)
