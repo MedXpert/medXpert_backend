@@ -65,20 +65,11 @@ class UserListView(APIView):
 
     def get(self, request):
         user = request.user
-        # if user.role != 1:
-        #     response = {
-        #         'success': False,
-        #         'status_code': status.HTTP_403_FORBIDDEN,
-        #         'message': 'You are not authorized to perform this action'
-        #     }
-        #     return Response(response, status.HTTP_403_FORBIDDEN)
-        # else:
-        users = AuthUser.objects.all()
-        serializer = self.serializer_class(users, many=True)
+        serializer = self.serializer_class(user)
         response = {
             'success': True,
             'status_code': status.HTTP_200_OK,
-            'message': 'Successfully fetched users',
+            'message': 'Successfully fetched logged in users',
             'users': serializer.data
 
         }
