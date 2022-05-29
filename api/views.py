@@ -2,9 +2,11 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import permissions
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import permissions, status
 from rest_framework import viewsets
+
+from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 #from .serializers import UserSerializer
 from .models import HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
@@ -17,6 +19,14 @@ from .serializers import AdminSerializer, HealthFacilityAccountSerializer, Addre
 #     queryset = Users.objects.all().order_by('firstName')
 #     serializer_class = UsersSerializer
 #     permission_classes = [permissions.IsAuthenticated]
+
+from .serializers import (
+    UserRegistrationSerializer,
+    UserLoginSerializer,
+    UserListSerializer
+)
+
+from .models import User as AuthUser
 
 class HealthProfileViewSet(viewsets.ModelViewSet):
 
@@ -99,3 +109,65 @@ class SleepHistoryViewSet(viewsets.ModelViewSet):
     serializer_class = SleepHistorySerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
+class AuthUserRegistrationView(APIView):
+    serializer_class = UserRegistrationSerializer
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        valid = serializer.is_valid(raise_exception=True)
+
+        if valid:
+            serializer.save()
+            status_code = status.HTTP_201_CREATED
+
+            response = {
+                'success': True,
+                'statusCode': status_code,
+                'message': 'User successfully registered!',
+                'user': serializer.data
+            }
+
+            return Response(response, status=status_code)
+
+class AuthUserLoginView(APIView):
+    serializer_class = UserLoginSerializer
+    permission_classes = (AllowAny, )
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        valid = serializer.is_valid(raise_exception=True)
+
+        if valid:
+            status_code = status.HTTP_200_OK
+
+            response = {
+                'success': True,
+                'statusCode': status_code,
+                'message': 'User logged in successfully',
+                'access': serializer.data['access'],
+                'refresh': serializer.data['refresh'],
+                'authenticatedUser': {
+                    'email': serializer.data['email'],
+                    'role': serializer.data['role']
+                }
+            }
+
+            return Response(response, status=status_code)
+
+class UserListView(APIView):
+    serializer_class = UserListSerializer
+    permission_classes = (IsAuthenticated, IsAdmin)
+
+    def get(self, request):
+        user = request.user
+        serializer = self.serializer_class(user)
+        response = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'message': 'Successfully fetched logged in users',
+            'users': serializer.data
+
+        }
+        return Response(response, status=status.HTTP_200_OK)

@@ -1,8 +1,14 @@
 from django.urls import include, path
 from . import views
 from rest_framework import routers
-from rest_framework.authtoken.views import obtain_auth_token
+from django.urls import path
+from rest_framework_simplejwt import views as jwt_views
 
+from .views import (
+    AuthUserRegistrationView,
+    AuthUserLoginView,
+    UserListView
+)
 app_name = 'authentication'
 
 router = routers.DefaultRouter()
@@ -26,5 +32,9 @@ router.register(r'SleepHistory', views.SleepHistoryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('token/obtain/', jwt_views.TokenObtainPairView.as_view(), name='token_create'),
+    path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('register', AuthUserRegistrationView.as_view(), name='register'),
+    path('login', AuthUserLoginView.as_view(), name='login'),
+    path('user', UserListView.as_view(), name='user')
 ]

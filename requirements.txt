@@ -6,5 +6,9 @@ phonenumbers==8.12.48
 Pillow==9.1.1
 pymongo==4.1.1
 pytz==2022.1
-sqlparse==0.2.4
+# sqlparse==0.2.4
 tzdata==2022.1
+backports.zoneinfo==0.2.1
+djangorestframework-simplejwt==5.2.0
+PyJWT==1.7.1
+sqlparse==0.4.2
