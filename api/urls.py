@@ -32,9 +32,9 @@ router.register(r'SleepHistory', views.SleepHistoryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('token/obtain/', jwt_views.TokenObtainPairView.as_view(), name='token_create'),
-    path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
-    path('register', AuthUserRegistrationView.as_view(), name='register'),
-    path('login', AuthUserLoginView.as_view(), name='login'),
-    path('user', UserListView.as_view(), name='user')
+    path('auth/token/obtain/', jwt_views.TokenObtainPairView.as_view(), name='token_create'),
+    path('auth/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/register', AuthUserRegistrationView.as_view(), name='register'),
+    path('auth/login', AuthUserLoginView.as_view(), name='login'),
+    path('auth/user', UserListView.as_view(), name='user')
 ]

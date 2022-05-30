@@ -47,7 +47,7 @@ class AdminViewSet(viewsets.ModelViewSet):
 class HealthFacilityAccountViewSet(viewsets.ModelViewSet):
     queryset = HealthFacilityAccount.objects.all()
     serializer_class = HealthFacilityAccountSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
 class HealthCareFacilityViewSet(viewsets.ModelViewSet):
     queryset = HealthCareFacility.objects.all()
