@@ -1,4 +1,5 @@
 
+from email.policy import default
 import uuid
 
 from django.db import models
@@ -75,7 +76,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phoneNumber = models.CharField(max_length=10, blank=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default=MALE, null=True)
     dateOfBirth = models.DateField(blank=True, null=True)
-    # profilePicture = models.ImageField(upload_to='profile_pics', blank=True)
+    profilePicture = models.ImageField(null=True, blank=True, default='defaultUser.png')
     role = models.CharField(choices=ROLE_CHOICES, null=True, default=USER, max_length=3)
     isActive = models.BooleanField(default=True)
     isDeleted = models.BooleanField(default=False)
@@ -104,15 +105,16 @@ class Admin(models.Model):
     profilePicture = models.ImageField()
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
 
-class HealthFacilityAccount(models.Model):
-    healthFacilityOrAmbulanceID = models.ForeignKey('api.AmbulanceService', on_delete=models.CASCADE, null=True, blank=True)
-    healthFacilityType =  models.CharField(max_length=100)
-    username =  models.CharField(max_length=50, unique=True)
-    email =  models.CharField(max_length=100)
-    password =  models.CharField(max_length=50)
-    creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
-    logo = models.ImageField()
-    additionalAttributes = models.CharField(max_length=500)
+# class HealthFacilityAccount(models.Model):
+#     healthFacilityOrAmbulanceID = models.ForeignKey('api.AmbulanceService', on_delete=models.CASCADE, null=True, blank=True)
+#     healthFacilityType =  models.CharField(max_length=100)
+#     username =  models.CharField(max_length=50, unique=True)
+#     email =  models.CharField(max_length=100)
+#     password =  models.CharField(max_length=50)
+#     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
+#     logo = models.ImageField(null=True, blank=True, default='defaultHealthFacility.jpg')
+#     additionalAttributes = models.CharField(max_length=500)
+
 
 class HealthCareFacility(models.Model):
     name = models.CharField(max_length=100)
@@ -126,9 +128,9 @@ class HealthCareFacility(models.Model):
     email = models.CharField(max_length=100)
     phoneNumber = PhoneNumberField(null=False, blank=False, unique=True)
     source = models.CharField(max_length=100)
-    imageGallery = models.ImageField()
+    logo = models.ImageField(null=True, blank=True, default='defaultHealthFacility.jpg')
     tags = models.CharField(max_length=100)
-    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE, null=True, blank=True)
+    #accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE, null=True, blank=True)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
     type =  models.CharField(max_length=100)
     services =  models.CharField(max_length=100)
@@ -136,6 +138,10 @@ class HealthCareFacility(models.Model):
     doctorCount =  models.IntegerField()
     averageNumberOfUsers = models.FloatField()
     additionalAttributes =  models.CharField(max_length=500)
+
+class HealthCareFacilityImage(models.Model):
+    HealthFacilityAccountID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, blank=True, null=True)
+    Image = models.ImageField(null=True, blank=True)
 
 class Appointment(models.Model):
     userID = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -179,7 +185,7 @@ class AmbulanceService(models.Model):
     email = models.CharField(max_length=100)
     phoneNumber = PhoneNumberField(null=False, blank=False, unique=True)
     source = models.CharField(max_length=100)
-    imageGallery = models.ImageField()
+    imageGallery = models.ImageField(null=True, blank=True)
     tags = models.CharField(max_length=100)
     accountID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
@@ -195,13 +201,12 @@ class Ambulance(models.Model):
     email = models.CharField(max_length=100, unique=True)
     password = models.CharField(max_length=50)
     phoneNumber = PhoneNumberField(null=False, blank=False, unique=True)
-    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE, null=True, blank=True)
+    accountID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     additionalAttributes = models.CharField(max_length=500)
 
 class HealthCareService(models.Model):
     healthCareFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     service = models.CharField(max_length=100)
-    Row3 = models.CharField(max_length=100)
 
 class ClaimRequest(models.Model):
     healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)

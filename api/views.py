@@ -8,8 +8,8 @@ from rest_framework import viewsets
 
 from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 from .serializers import UserSerializer
-from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
-from .serializers import AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, UserSerializer
+from .models import HealthCareFacilityImage, User, HealthProfile, Address, Admin, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .serializers import AdminSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, UserSerializer, HealthCareFacilityImageSerializer
 
 # The code below should be uncommented once the above import is uncommented
 class UserViewSet(viewsets.ModelViewSet):
@@ -42,10 +42,15 @@ class AdminViewSet(viewsets.ModelViewSet):
     serializer_class = AdminSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class HealthFacilityAccountViewSet(viewsets.ModelViewSet):
-    queryset = HealthFacilityAccount.objects.all()
-    serializer_class = HealthFacilityAccountSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdmin]
+# class HealthFacilityAccountViewSet(viewsets.ModelViewSet):
+#     queryset = HealthFacilityAccount.objects.all()
+#     serializer_class = HealthFacilityAccountSerializer
+#     permission_classes = [permissions.IsAuthenticated, IsAdmin]
+
+class HealthCareFacilityImageViewSet(viewsets.ModelViewSet):
+    queryset = HealthCareFacilityImage.objects.all()
+    serializer_class = HealthCareFacilityImageSerializer
+    permission_class = [permissions.IsAuthenticated]
 
 class HealthCareFacilityViewSet(viewsets.ModelViewSet):
     queryset = HealthCareFacility.objects.all()

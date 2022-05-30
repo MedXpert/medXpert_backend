@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import update_last_login
-from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .models import User, HealthProfile, Address, Admin, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory, HealthCareFacilityImage
 from rest_framework import serializers
 
 # This class should be uncommented when importing Users is uncommented
@@ -25,9 +25,15 @@ class AdminSerializer(serializers.ModelSerializer):
         model = Admin
         fields = "__all__"
 
-class HealthFacilityAccountSerializer(serializers.ModelSerializer):
+# class HealthFacilityAccountSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = HealthFacilityAccount
+#         fields = "__all__"
+
+class HealthCareFacilityImageSerializer(serializers.ModelSerializer):
+
     class Meta:
-        model = HealthFacilityAccount
+        model = HealthCareFacilityImage
         fields = "__all__"
 
 class HealthCareFacilitySerializer(serializers.ModelSerializer):

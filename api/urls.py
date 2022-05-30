@@ -1,8 +1,12 @@
+from xml.dom.minidom import Document
 from django.urls import include, path
 from . import views
 from rest_framework import routers
 from django.urls import path
 from rest_framework_simplejwt import views as jwt_views
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf.urls.static import static
+from django.conf import settings
 
 from .views import (
     AuthUserRegistrationView,
@@ -16,7 +20,8 @@ router.register(r'User', views.UserViewSet)
 router.register(r'HealthProfile', views.HealthProfileViewSet)
 router.register(r'Address', views.AddressViewSet)
 router.register(r'Admin', views.AdminViewSet)
-router.register(r'HealthFacilityAccount', views.HealthFacilityAccountViewSet)
+# router.register(r'HealthFacilityAccount', views.HealthFacilityAccountViewSet)
+router.register(r'HealthCareFacilityImage', views.HealthCareFacilityImageViewSet)
 router.register(r'HealthCareFacility', views.HealthCareFacilityViewSet)
 router.register(r'Appointment', views.AppointmentViewSet)
 router.register(r'UserRating', views.UserRatingViewSet)
@@ -38,3 +43,7 @@ urlpatterns = [
     path('auth/login', AuthUserLoginView.as_view(), name='login'),
     path('auth/user', UserListView.as_view(), name='user')
 ]
+
+
+urlpatterns += staticfiles_urlpatterns()
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
