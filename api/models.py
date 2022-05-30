@@ -83,6 +83,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     modifiedDate = models.DateTimeField(default=timezone.now)
     createdBy = models.EmailField()
     modifiedBy = models.EmailField()
+    healthProfileID = models.ForeignKey(HealthProfile, on_delete=models.CASCADE, null=True, blank=True)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
 
     objects = CustomUserManager()
     
@@ -91,28 +93,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'user'
         verbose_name_plural = 'users'
-# class Users(models.Model):
-
-#     firstName = models.CharField(max_length=50)
-#     lastName = models.CharField(max_length=50)
-#     email = models.CharField(max_length=100)
-#     phoneNumber = PhoneNumberField(null=False, blank=False, unique=True)
-#     username = models.CharField(max_length=50, unique=True)
-#     password = models.CharField(max_length=50)
-#     profilePicture = models.ImageField()
-#     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
-#     dateOfBirth = models.DateField()
-#     sex = models.CharField(max_length=1, choices=SEX_CHOICES)
-#     healthProfileID = models.ForeignKey(HealthProfile, on_delete=models.CASCADE)
-#     address = models.ForeignKey(Address, on_delete=models.CASCADE)
-#     additionalAttributes = models.CharField(max_length=500)
-
-#     USERNAME_FIELD = 'username'
-#     PASSWORD_FIELD = 'password'
-#     REQUIRED_FIELDS = []
-
-#     def __str__(self):
-#         return self.firstName + " " + self.lastName
 
 class Admin(models.Model):
     firstName = models.CharField(max_length=50)
@@ -125,7 +105,7 @@ class Admin(models.Model):
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
 
 class HealthFacilityAccount(models.Model):
-    healthFacilityOrAmbulanceID = models.ForeignKey('api.AmbulanceService', on_delete=models.CASCADE)
+    healthFacilityOrAmbulanceID = models.ForeignKey('api.AmbulanceService', on_delete=models.CASCADE, null=True, blank=True)
     healthFacilityType =  models.CharField(max_length=100)
     username =  models.CharField(max_length=50, unique=True)
     email =  models.CharField(max_length=100)
@@ -138,7 +118,7 @@ class HealthCareFacility(models.Model):
     name = models.CharField(max_length=100)
     branch = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
-    address = models.ForeignKey(Admin, on_delete=models.CASCADE)
+    address = models.ForeignKey(Admin, on_delete=models.CASCADE, null=True, blank=True)
     averageRating = models.FloatField()
     GPSCoordinates = models.CharField(max_length=100)
     verificationStatus = models.CharField(max_length=50)
@@ -148,7 +128,7 @@ class HealthCareFacility(models.Model):
     source = models.CharField(max_length=100)
     imageGallery = models.ImageField()
     tags = models.CharField(max_length=100)
-    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE)
+    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE, null=True, blank=True)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
     type =  models.CharField(max_length=100)
     services =  models.CharField(max_length=100)
@@ -158,31 +138,31 @@ class HealthCareFacility(models.Model):
     additionalAttributes =  models.CharField(max_length=500)
 
 class Appointment(models.Model):
-    #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
-    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    userID = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     healthFacilityType = models.CharField(max_length=100)
     dateTime = models.DateTimeField()
     status = models.CharField(max_length=50)
 
 class UserRating(models.Model):
-    #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
-    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    userID = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     rating = models.IntegerField()
     healthFacilityType = models.CharField(max_length=100)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
     lastUpdateTime = models.DateTimeField(default=datetime.now, blank=True)
 
 class UserReview(models.Model):
-    #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
-    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    userID = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     review = models.CharField(max_length=200)
     healthFacilityType = models.CharField(max_length=100)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
     lastUpdateTime = models.DateTimeField(default=datetime.now, blank=True)
 
 class ReviewComment(models.Model):
-    commenterID = models.ForeignKey(UserRating, on_delete=models.CASCADE)
-    UserReviewID = models.ForeignKey(UserReview, on_delete=models.CASCADE)
+    commenterID = models.ForeignKey(UserRating, on_delete=models.CASCADE, null=True, blank=True)
+    UserReviewID = models.ForeignKey(UserReview, on_delete=models.CASCADE, null=True, blank=True)
     comment = models.CharField(max_length=200)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
     lastUpdateTime = models.DateTimeField(default=datetime.now, blank=True)
@@ -191,7 +171,7 @@ class AmbulanceService(models.Model):
     name = models.CharField(max_length=100)
     branch = models.CharField(max_length=100)
     description = models.CharField(max_length=200)
-    address = models.ForeignKey(Admin, on_delete=models.CASCADE)
+    address = models.ForeignKey(Admin, on_delete=models.CASCADE, null=True, blank=True)
     averageRating = models.FloatField()
     GPSCoordinates = models.CharField(max_length=100)
     verificationStatus = models.CharField(max_length=50)
@@ -201,12 +181,12 @@ class AmbulanceService(models.Model):
     source = models.CharField(max_length=100)
     imageGallery = models.ImageField()
     tags = models.CharField(max_length=100)
-    accountID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    accountID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
     additionalAttributes = models.CharField(max_length=500)
 
 class Ambulance(models.Model):
-    healthFacilityID = models.ForeignKey(AmbulanceService, on_delete=models.CASCADE)
+    healthFacilityID = models.ForeignKey(AmbulanceService, on_delete=models.CASCADE, null=True, blank=True)
     healthFacilityType = models.CharField(max_length=100)
     driverFirstName = models.CharField(max_length=100)
     driverLastName = models.CharField(max_length=100)
@@ -215,16 +195,16 @@ class Ambulance(models.Model):
     email = models.CharField(max_length=100, unique=True)
     password = models.CharField(max_length=50)
     phoneNumber = PhoneNumberField(null=False, blank=False, unique=True)
-    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE)
+    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE, null=True, blank=True)
     additionalAttributes = models.CharField(max_length=500)
 
 class HealthCareService(models.Model):
-    healthCareFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    healthCareFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     service = models.CharField(max_length=100)
     Row3 = models.CharField(max_length=100)
 
 class ClaimRequest(models.Model):
-    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE, null=True, blank=True)
     requesterPhoneNumber = PhoneNumberField(null=False, blank=False)
     requesterFirstName = models.CharField(max_length=100)
     requesterLastName = models.CharField(max_length=100)

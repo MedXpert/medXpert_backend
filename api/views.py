@@ -7,18 +7,16 @@ from rest_framework import permissions, status
 from rest_framework import viewsets
 
 from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
-#from .serializers import UserSerializer
-from .models import HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
-#from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer
-#from .serializers import UsersSerializer # This line should be uncommented when UsersSerializer is uncommented in the serializers.py file
+from .serializers import UserSerializer
+from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .serializers import AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, UserSerializer
 
 # The code below should be uncommented once the above import is uncommented
-# class UsersViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
 
-#     queryset = Users.objects.all().order_by('firstName')
-#     serializer_class = UsersSerializer
-#     permission_classes = [permissions.IsAuthenticated]
+    queryset = User.objects.all().order_by('firstName')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 from .serializers import (
     UserRegistrationSerializer,

@@ -123,9 +123,9 @@ DATABASES = {
 
         'NAME': 'medxpert',
 
-        'USER': 'mike',
+        'USER': 'postgres',
 
-        'PASSWORD': 'mike123',
+        'PASSWORD': '0000',
 
         'HOST': 'localhost',
 
