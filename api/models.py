@@ -8,7 +8,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.utils import timezone
-
+from django.contrib.gis.db.models import PointField
 
 # Create your models here.
 
@@ -122,7 +122,7 @@ class HealthCareFacility(models.Model):
     description = models.CharField(max_length=500)
     address = models.ForeignKey(Admin, on_delete=models.CASCADE, null=True, blank=True)
     averageRating = models.FloatField()
-    GPSCoordinates = models.CharField(max_length=100)
+    GPSCoordinates = PointField(max_length=100)
     verificationStatus = models.CharField(max_length=50)
     website = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
