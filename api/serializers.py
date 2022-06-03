@@ -6,10 +6,10 @@ from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, 
 from rest_framework import serializers
 
 # This class should be uncommented when importing Users is uncommented
-# class UsersSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Users
-#         fields = '__all__'
+class UsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
 
 class HealthProfileSerializer(serializers.ModelSerializer):
     class Meta:

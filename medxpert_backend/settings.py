@@ -26,8 +26,8 @@ SECRET_KEY = 'django-insecure-^g8#^z0evre489ws2!m_37cx&8*ld4mcn*0&dx+)zw=b-311d$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
 #Set auth user to the new user model
 AUTH_USER_MODEL = 'api.User'
 
@@ -123,7 +123,7 @@ DATABASES = {
 
         'NAME': 'medxpert',
 
-        'USER': 'mike',
+        'USER': 'postgres',
 
         'PASSWORD': 'mike123',
 
