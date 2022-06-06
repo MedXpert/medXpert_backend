@@ -75,7 +75,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-    'api.apps.ApiConfig'
+    'api.apps.ApiConfig',
+    'mail.apps.MailConfig',
 ]
 
 MIDDLEWARE = [
@@ -107,6 +108,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'medxpert_backend.wsgi.application'
+
+
+#gmail_send/settings.py
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'medxpert.fall.detection@gmail.com'
+EMAIL_HOST_PASSWORD = 'kqsvsmaeettkhhbj' #past the key or password app here
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'default from email'
 
 
 # Database
