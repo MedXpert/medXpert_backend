@@ -120,7 +120,7 @@ class UserLoginSerializer(serializers.Serializer):
     access = serializers.CharField(read_only=True)
     refresh = serializers.CharField(read_only=True)
     role = serializers.CharField(read_only=True)
-
+    uid = serializers.UUIDField(read_only=True)
     def create(self, validated_date):
         pass
 
@@ -146,6 +146,7 @@ class UserLoginSerializer(serializers.Serializer):
                 'access': access_token,
                 'refresh': refresh_token,
                 'email': user.email,
+                'uid': user.uid,
                 'role': user.role,
             }
 
