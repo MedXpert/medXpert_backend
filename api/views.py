@@ -10,7 +10,7 @@ from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 #from .serializers import UserSerializer
 from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import UsersSerializer, AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer
+from .serializers import LoggedInUserSerializer, UsersSerializer, AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer
 #from .serializers import UsersSerializer # This line should be uncommented when UsersSerializer is uncommented in the serializers.py file
 
 # The code below should be uncommented once the above import is uncommented
@@ -169,6 +169,22 @@ class UserListView(APIView):
             'status_code': status.HTTP_200_OK,
             'message': 'Successfully fetched logged in users',
             'users': serializer.data
+
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+class LoggedInUserView(APIView):
+    serializer_class = LoggedInUserSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        serializer = self.serializer_class(user)
+        response = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'message': 'Successfully fetched logged in users',
+            'user': serializer.data
 
         }
         return Response(response, status=status.HTTP_200_OK)

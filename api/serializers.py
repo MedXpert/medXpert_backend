@@ -114,6 +114,18 @@ class UserListSerializer(serializers.ModelSerializer):
             'role'
         )
 
+class LoggedInUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'firstName',
+            'lastName',
+            'email',
+            'phoneNumber',
+            'dateOfBirth',
+            'role'
+        )
+
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(max_length=128, write_only=True)

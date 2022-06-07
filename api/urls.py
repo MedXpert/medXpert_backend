@@ -7,7 +7,8 @@ from rest_framework_simplejwt import views as jwt_views
 from .views import (
     AuthUserRegistrationView,
     AuthUserLoginView,
-    UserListView
+    UserListView,
+    LoggedInUserView,
 )
 app_name = 'authentication'
 
@@ -36,5 +37,5 @@ urlpatterns = [
     path('auth/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/register', AuthUserRegistrationView.as_view(), name='register'),
     path('auth/login', AuthUserLoginView.as_view(), name='login'),
-    path('auth/user', UserListView.as_view(), name='user')
+    path('auth/user', LoggedInUserView.as_view(), name='user')
 ]
