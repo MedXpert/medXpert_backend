@@ -1,3 +1,6 @@
+import email
+from os import stat
+from urllib import response
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -109,7 +112,6 @@ class SleepHistoryViewSet(viewsets.ModelViewSet):
     serializer_class = SleepHistorySerializer
     permission_classes = [permissions.IsAuthenticated]
 
-
 class AuthUserRegistrationView(APIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = (AllowAny, )
@@ -130,6 +132,8 @@ class AuthUserRegistrationView(APIView):
             }
 
             return Response(response, status=status_code)
+    
+
 
 class AuthUserLoginView(APIView):
     serializer_class = UserLoginSerializer
@@ -188,3 +192,19 @@ class LoggedInUserView(APIView):
 
         }
         return Response(response, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid()
+        user = User.objects.filter(email=request.user.email)
+        serializer.update(user, request.data)
+        status_code = status.HTTP_200_OK
+
+        response = {
+            'success': True,
+            'statusCode': status_code,
+            'message': 'User updated successfully',
+            'user': serializer.data
+        }
+
+        return Response(response, status=status_code)

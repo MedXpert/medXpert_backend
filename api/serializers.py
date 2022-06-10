@@ -1,3 +1,5 @@
+from dataclasses import field
+from re import U
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import update_last_login
@@ -125,6 +127,12 @@ class LoggedInUserSerializer(serializers.ModelSerializer):
             'dateOfBirth',
             'role'
         )
+    
+    
+    def update(self, instance, validated_data):
+        instance.update(**validated_data)
+        # print("The instance" , instance)
+        # print("The validated data", validated_data)
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
