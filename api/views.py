@@ -183,8 +183,8 @@ class NearbyHealthCareFacilityView(APIView):
     permission_classes = (AllowAny,)#(IsAuthenticated, )
 
     def get(self, request):
-        limit = int(request.query_params.get('limit',None)) or 10
-        max_distance = int(request.query_params.get('max_distance',None)) or 3000
+        limit = int(request.query_params.get('limit',None) or 10)
+        max_distance = int(request.query_params.get('max_distance',None) or 3000)
         coord = list(request.query_params['coordinates'].split(","))
         userCoord = Point(float(coord[0]),float(coord[1]), srid=4326)
         res = HealthCareFacility.objects.filter(GPSCoordinates__distance_lte=(userCoord,D(m=max_distance))).annotate(distance=Distance("GPSCoordinates", userCoord)).order_by('distance')[0:limit]
