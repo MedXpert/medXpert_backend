@@ -12,3 +12,4 @@ backports.zoneinfo==0.2.1
 djangorestframework-simplejwt==5.2.0
 PyJWT==1.7.1
 sqlparse==0.4.2
+psycopg2==2.9.3

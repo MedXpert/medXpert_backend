@@ -8,9 +8,9 @@ from rest_framework import viewsets
 
 from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 #from .serializers import UserSerializer
-from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .models import User, HealthProfile, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import LoggedInUserSerializer, UsersSerializer, AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer
+from .serializers import LoggedInUserSerializer, UsersSerializer, AdminSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
 #from .serializers import UsersSerializer # This line should be uncommented when UsersSerializer is uncommented in the serializers.py file
 
 # The code below should be uncommented once the above import is uncommented
@@ -34,10 +34,10 @@ class HealthProfileViewSet(viewsets.ModelViewSet):
     serializer_class = HealthProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class AddressViewSet(viewsets.ModelViewSet):
-    queryset = Address.objects.all()
-    serializer_class = AddressSerializer
-    permission_classes = [permissions.IsAuthenticated]
+# class AddressViewSet(viewsets.ModelViewSet):
+#     queryset = Address.objects.all()
+#     serializer_class = AddressSerializer
+#     permission_classes = [permissions.IsAuthenticated]
 
 class AdminViewSet(viewsets.ModelViewSet):
     queryset = Admin.objects.all().order_by('firstName')
@@ -131,6 +131,7 @@ class AuthUserRegistrationView(APIView):
 
             return Response(response, status=status_code)
 
+
 class AuthUserLoginView(APIView):
     serializer_class = UserLoginSerializer
     permission_classes = (AllowAny, )
@@ -172,6 +173,44 @@ class UserListView(APIView):
 
         }
         return Response(response, status=status.HTTP_200_OK)
+
+#!
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
+from django.contrib.gis.db.models.functions import Distance
+class NearbyHealthCareFacilityView(APIView):
+    serializer_class = NearbyHealthCareFacilitySerializer
+    permission_classes = (AllowAny,)#(IsAuthenticated, )
+
+    def get(self, request):
+        limit = int(request.query_params.get('limit',None)) or 10
+        max_distance = int(request.query_params.get('max_distance',None)) or 3000
+        coord = list(request.query_params['coordinates'].split(","))
+        userCoord = Point(float(coord[0]),float(coord[1]), srid=4326)
+        res = HealthCareFacility.objects.filter(GPSCoordinates__distance_lte=(userCoord,D(m=max_distance))).annotate(distance=Distance("GPSCoordinates", userCoord)).order_by('distance')[0:limit]
+        data = [self.serializer_class(r).data for r in res]
+        # serializer = self.serializer_class(data=res.values())
+        # valid = serializer.is_valid(raise_exception=True)
+
+        status_code = status.HTTP_200_OK
+        response =  {
+            'success': True,
+            'statusCode': status_code,
+            'data': data
+        }
+        return Response(response, status=status_code)
+
+# def NearbyHealthCareFacilityView(request, limit):
+    # userCoord = Point(request.data['coordinates'], srid=4326)
+    # res = HealthCareFacility.objects.filter(GPSCoordinates__distance_lte=(userCoord,D(m=1000))).annotate(distance=Distance("GPSCoordinates", userCoord)).order_by('distance')[0:request.args['limit']]
+    # serializer = self.serializer_class(data=request.data)
+
+    # status_code = status.HTTP_200_OK
+    # return {
+    #     'success': True,
+    #     'statusCode': status_code,
+    #     'data': []
+    # }
 
 class LoggedInUserView(APIView):
     serializer_class = LoggedInUserSerializer
