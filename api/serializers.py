@@ -34,24 +34,6 @@ class HealthCareFacilitySerializer(serializers.ModelSerializer):
         model = HealthCareFacility
         fields = "__all__"
 
-class AppointmentSerializer(serializers.Serializer):
-    
-    user = serializers.IntegerField(required=False)
-    healthFacility = serializers.IntegerField(required=False)
-    dateTime = serializers.DateTimeField(required=False)
-    status = serializers.CharField(required=True)
-    reminderStatus = serializers.CharField(required=True)
-    declinedBy = serializers.CharField(required=False)
-
-
-    def create(self, validated_data):
-        return Appointment.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        instance.status = validated_data.get('status', instance.status)
-        instance.reminderStatus = validated_data.get('reminderStatus', instance.reminderStatus)
-        instance.declinedBy = validated_data.get('declinedBy', instance.declinedBy)
-        instance.save()
 
 class UserRatingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -201,3 +183,19 @@ class UserLoginSerializer(serializers.Serializer):
             
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid login credentials")
+
+class AppointmentSerializer(serializers.Serializer):
+    class Meta:
+        model = Appointment
+        fields = (
+            'user',
+            'healthFacility',
+            'dateTime',
+            'status',
+            'reminderStatus',
+            'cancelledBy'
+        )
+
+    def create(self, validate_data):
+        appointment = Appointment.objects.create(**validate_data)
+        return appointment
