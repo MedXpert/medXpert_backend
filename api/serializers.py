@@ -3,7 +3,7 @@ from re import U
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import update_last_login
-from .models import User, HealthProfile, Address, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .models import User, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models import Users # This line should be uncommented when the Users class in models.py is uncommented
 from rest_framework import serializers
 from django.contrib.auth.hashers import check_password
@@ -19,10 +19,10 @@ class HealthProfileSerializer(serializers.ModelSerializer):
         model = HealthProfile
         fields = "__all__"
 
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        fields = "__all__"
+# class AddressSerializer(serializers.ModelSerializer):
+    # class Meta:
+    #     model = Address
+    #     fields = "__all__"
 
 class HealthFacilityAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -117,6 +117,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validate_data):
         auth_user = User.objects.create_user(**validate_data)
         return auth_user
+
+#!
+class NearbyHealthCareFacilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HealthCareFacility
+        fields = "__all__"
 
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:

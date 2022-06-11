@@ -1,13 +1,16 @@
 
+from multiprocessing.dummy import Array
 import uuid
 
-from django.db import models
+# from django.db import models
+from django.contrib.gis.db import models
 from datetime import datetime
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.utils import timezone
-from pkg_resources import require
+from django.contrib.postgres.fields import ArrayField
+from django.utils import timezone
 
 
 # Create your models here.
@@ -35,15 +38,15 @@ class HealthProfile(models.Model):
     def __str__(self):
         return self.healthConditions
 
-class Address(models.Model):
-    houseNumber = models.CharField(max_length=10)
-    kebele = models.IntegerField()
-    subCity = models.CharField(max_length=50)
-    regionOrCity = models.CharField(max_length=50)
-    country = models.CharField(max_length=70)
+# class Address(models.Model):
+#     houseNumber = models.CharField(max_length=10)
+#     kebele = models.IntegerField()
+#     subCity = models.CharField(max_length=50)
+#     regionOrCity = models.CharField(max_length=50)
+#     country = models.CharField(max_length=70)
 
-    def __str__(self):
-        return self.houseNumber
+#     def __str__(self):
+#         return self.houseNumber
 
 class User(AbstractBaseUser, PermissionsMixin):
 
@@ -104,27 +107,64 @@ class HealthFacilityAccount(models.Model):
     additionalAttributes = models.CharField(max_length=500)
 
 class HealthCareFacility(models.Model):
-    name = models.CharField(max_length=100)
-    branch = models.CharField(max_length=100)
-    description = models.CharField(max_length=500)
-    address = models.ForeignKey(User, on_delete=models.CASCADE)
-    averageRating = models.FloatField()
-    GPSCoordinates = models.CharField(max_length=100)
-    verificationStatus = models.CharField(max_length=50)
-    website = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-    phoneNumber = PhoneNumberField(null=False, blank=False, unique=True)
-    source = models.CharField(max_length=100)
-    imageGallery = models.ImageField()
-    tags = models.CharField(max_length=100)
-    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE)
-    creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
-    type =  models.CharField(max_length=100)
-    services =  models.CharField(max_length=100)
-    capacity =  models.CharField(max_length=100)
-    doctorCount =  models.IntegerField()
-    averageNumberOfUsers = models.FloatField()
-    additionalAttributes =  models.CharField(max_length=500)
+
+    SCRAPER = 'Scraper'
+    USER = 'User'
+    ADMIN = 'Admin'
+    addedByChoices = [
+        (SCRAPER, 'Scraper'),
+        (USER, 'User'),
+        (ADMIN, 'Admin'),
+    ]
+    name = models.CharField(max_length=150)
+    address = models.TextField(blank=True, null=True)
+    phoneNumbers = ArrayField(PhoneNumberField(unique=True, null=True),null=True, blank=True)
+    faxNumbers = ArrayField(PhoneNumberField(unique=True, null=True),null=True, blank=True)
+    email = models.EmailField(blank=False, null=False) #!log... #emilf.. will be back when py reconnects
+    website = models.TextField(blank=True, null=True)
+    
+    imageGallaryLinks = ArrayField(models.URLField(), null=True, blank=True) #links
+    imageGallaryPhotos = ArrayField(models.ImageField(), null=True, blank=True) #photos
+    
+    foundedIn = models.CharField(max_length=10, blank=True)
+    numberOfEmployeesRange = ArrayField(models.IntegerField(), size=2, null=True, blank=True)
+    
+    source_addedBy = models.CharField(max_length=10, choices=addedByChoices, null=False, blank=False, default=SCRAPER)
+    source_identifier = models.TextField(null=False, blank=False, default="ethyp") #id or users/admins. scraped source for scraper.
+    verificationIndexPer10 = models.IntegerField(null=True, blank=True) #db_index here?
+    
+    GPSCoordinates = models.PointField(spatial_index=True,null=True, blank=True)
+
+    branch = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(max_length=500, blank=True, null=True)
+    
+    averageRating = models.FloatField(null=True) #...c #nar = ((oar * tr)+nr)/(tr+1)
+    total_ratings = models.IntegerField(null=True) #count
+
+    # source = models.CharField(max_length=100, null=True)
+    tags = ArrayField(models.CharField(max_length=100, blank=True), null=True, blank=True)
+
+    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE, null=True) #removed?
+    # creationDateTime = models.DateTimeField(default=make_aware(datetime.now), null=True)
+    creationDateTime = models.DateTimeField(default=timezone.now)
+    # creationDateTime = models.DateTimeField(auto_now_add=True)
+    
+
+    facility_type =  models.CharField(max_length=100, blank=True, null=True) #
+    services = ArrayField(models.CharField(max_length=100, blank=True), null=True, blank=True) #
+
+    # capacity = models.CharField(max_length=100, null=True)
+    doctorCount =  models.IntegerField(null=True, blank=True)
+    averageNumberOfUsers = models.FloatField(null=True, blank=True) #calc
+    additionalAttributes =  models.CharField(max_length=500, null=True)
+
+    def update_average_rating(self, new_rating):
+        if not (isinstance(self.averageRating, float) and isinstance(self.total_ratings, int)): #r
+            self.averageRating = 0
+            self.total_ratings = 0
+        self.averageRating = ((self.averageRating * self.total_ratings)+new_rating) / (self.total_ratings + 1)
+        self.total_ratings += 1
+        self.save()
 
 class Appointment(models.Model):
     STATUS_CHOICES = (
@@ -147,11 +187,15 @@ class Appointment(models.Model):
 
 class UserRating(models.Model):
     #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
-    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    healthFacility = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
     rating = models.IntegerField()
     healthFacilityType = models.CharField(max_length=100)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
     lastUpdateTime = models.DateTimeField(default=datetime.now, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.healthFacility.update_average_rating(self.rating)
+        super().save(*args,**kwargs)
 
 class UserReview(models.Model):
     #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
