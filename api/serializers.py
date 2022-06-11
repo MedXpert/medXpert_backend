@@ -3,7 +3,7 @@ from re import U
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import update_last_login
-from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .models import User, HealthProfile, Address, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models import Users # This line should be uncommented when the Users class in models.py is uncommented
 from rest_framework import serializers
 from django.contrib.auth.hashers import check_password
@@ -24,11 +24,6 @@ class AddressSerializer(serializers.ModelSerializer):
         model = Address
         fields = "__all__"
 
-class AdminSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Admin
-        fields = "__all__"
-
 class HealthFacilityAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = HealthFacilityAccount
@@ -39,10 +34,24 @@ class HealthCareFacilitySerializer(serializers.ModelSerializer):
         model = HealthCareFacility
         fields = "__all__"
 
-class AppointmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Appointment
-        fields = "__all__"
+class AppointmentSerializer(serializers.Serializer):
+    
+    user = serializers.IntegerField(required=False)
+    healthFacility = serializers.IntegerField(required=False)
+    dateTime = serializers.DateTimeField(required=False)
+    status = serializers.CharField(required=True)
+    reminderStatus = serializers.CharField(required=True)
+    declinedBy = serializers.CharField(required=False)
+
+
+    def create(self, validated_data):
+        return Appointment.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.status = validated_data.get('status', instance.status)
+        instance.reminderStatus = validated_data.get('reminderStatus', instance.reminderStatus)
+        instance.declinedBy = validated_data.get('declinedBy', instance.declinedBy)
+        instance.save()
 
 class UserRatingSerializer(serializers.ModelSerializer):
     class Meta:

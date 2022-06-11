@@ -107,7 +107,7 @@ class HealthCareFacility(models.Model):
     name = models.CharField(max_length=100)
     branch = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
-    address = models.ForeignKey(Admin, on_delete=models.CASCADE)
+    address = models.ForeignKey(User, on_delete=models.CASCADE)
     averageRating = models.FloatField()
     GPSCoordinates = models.CharField(max_length=100)
     verificationStatus = models.CharField(max_length=50)
@@ -138,9 +138,9 @@ class Appointment(models.Model):
         ('healthfacility', 'HealthFacility'),
     )
 
-    userID = models.ForeignKey(User, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
-    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
-    dateTime = models.DateTimeField(require=True)
+    user = models.ForeignKey(User,default=None, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
+    healthFacility = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    dateTime = models.DateTimeField(blank=False)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
     reminderStatus = models.BooleanField(default=False)
     cancelledBy = models.CharField(max_length=50, choices=CANCELLED_BY_CHOICES, default='user', null=True)
@@ -172,7 +172,7 @@ class AmbulanceService(models.Model):
     name = models.CharField(max_length=100)
     branch = models.CharField(max_length=100)
     description = models.CharField(max_length=200)
-    address = models.ForeignKey(Admin, on_delete=models.CASCADE)
+    address = models.ForeignKey(User, on_delete=models.CASCADE)
     averageRating = models.FloatField()
     GPSCoordinates = models.CharField(max_length=100)
     verificationStatus = models.CharField(max_length=50)

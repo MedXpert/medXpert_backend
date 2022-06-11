@@ -1,6 +1,7 @@
 import email
 from os import stat
 from urllib import response
+from django.http import Http404
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -11,9 +12,9 @@ from rest_framework import viewsets
 
 from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 #from .serializers import UserSerializer
-from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .models import User, HealthProfile, Address, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import LoggedInUserSerializer, UserChangePasswordSerializer, UsersSerializer, AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer
+from .serializers import LoggedInUserSerializer, UserChangePasswordSerializer, UsersSerializer,  HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer
 #from .serializers import UsersSerializer # This line should be uncommented when UsersSerializer is uncommented in the serializers.py file
 
 # The code below should be uncommented once the above import is uncommented
@@ -39,11 +40,6 @@ class AddressViewSet(viewsets.ModelViewSet):
     serializer_class = AddressSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class AdminViewSet(viewsets.ModelViewSet):
-    queryset = Admin.objects.all().order_by('firstName')
-    serializer_class = AdminSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
 class HealthFacilityAccountViewSet(viewsets.ModelViewSet):
     queryset = HealthFacilityAccount.objects.all()
     serializer_class = HealthFacilityAccountSerializer
@@ -54,10 +50,6 @@ class HealthCareFacilityViewSet(viewsets.ModelViewSet):
     serializer_class = HealthCareFacilitySerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class AppointmentViewSet(viewsets.ModelViewSet):
-    queryset = Appointment.objects.all()
-    serializer_class = AppointmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 class UserRatingViewSet(viewsets.ModelViewSet):
     queryset = UserRating.objects.all()
@@ -226,3 +218,51 @@ class LoggedInUserView(APIView):
         }
 
         return Response(response, status=status_code)
+
+class AppointmentView(APIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, healthFacilityId, userId):
+        try:
+            return Appointment.objects.get(user_id=userId,healthFacility_id=healthFacilityId)
+        except Appointment.DoesNotExist:
+            return []
+
+    def get(self, request, healthFacilityId):
+        print(request.user)
+        appointments = self.get_object(healthFacilityId, request.user.id)
+    
+        response = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'message': 'Successfully fetched appointment',
+            'appointments': appointments
+
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    def post(self, request, healthFacilityId):
+        newAppointment = {
+            'user': request.user.id,
+            'healthFacility': healthFacilityId,
+            'dateTime': request.data['dateTime'],
+            'status': 'pending',
+            'reminderStatus': request.data['reminderStatus'],
+        }   
+        serializer = self.serializer_class(data=newAppointment)
+        valid = serializer.is_valid()
+
+        if valid:
+            serializer.save()
+            status_code = status.HTTP_201_CREATED
+            
+            response = {
+                'success': True,
+                'statusCode': status_code,
+                'message': 'Appointment successfully created'
+            }
+
+            return Response(response, status=status_code)
+        
+        return Response({'message: "Wrong Data'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
