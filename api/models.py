@@ -118,15 +118,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 #     def __str__(self):
 #         return self.firstName + " " + self.lastName
 
-class Admin(models.Model):
-    firstName = models.CharField(max_length=50)
-    lastName = models.CharField(max_length=50)
-    email = models.CharField(max_length=100)
-    phoneNumber = PhoneNumberField(null=False, blank=False, unique=True)
-    username = models.CharField(null=False, blank=False, unique=True, max_length=50)
-    password = models.CharField(max_length=50)
-    profilePicture = models.ImageField()
-    creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
 
 class HealthFacilityAccount(models.Model):
     healthFacilityOrAmbulanceID = models.ForeignKey('api.AmbulanceService', on_delete=models.CASCADE)
