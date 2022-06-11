@@ -18,7 +18,7 @@ router = routers.DefaultRouter()
 router.register(r'Users', views.UsersViewSet) # This line should be uncommented when the UsersViewSet is uncommented in the views.py
 router.register(r'HealthProfile', views.HealthProfileViewSet)
 router.register(r'HealthFacilityAccount', views.HealthFacilityAccountViewSet)
-router.register(r'HealthCareFacility', views.HealthCareFacilityViewSet)
+router.register(r'healthCareFacility', views.HealthCareFacilityViewSet)
 router.register(r'UserRating', views.UserRatingViewSet)
 router.register(r'UserReview', views.UserReviewViewSet)
 router.register(r'ReviewComment', views.ReviewCommentViewSet)
