@@ -13,7 +13,7 @@ from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 #from .serializers import UserSerializer
 from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import LoggedInUserSerializer, UsersSerializer, AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer
+from .serializers import LoggedInUserSerializer, UserChangePasswordSerializer, UsersSerializer, AdminSerializer, HealthFacilityAccountSerializer, AddressSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer
 #from .serializers import UsersSerializer # This line should be uncommented when UsersSerializer is uncommented in the serializers.py file
 
 # The code below should be uncommented once the above import is uncommented
@@ -29,10 +29,7 @@ from .serializers import (
     UserListSerializer
 )
 
-from .models import User as AuthUser
-
 class HealthProfileViewSet(viewsets.ModelViewSet):
-
     queryset = HealthProfile.objects.all()
     serializer_class = HealthProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -176,6 +173,27 @@ class UserListView(APIView):
 
         }
         return Response(response, status=status.HTTP_200_OK)
+
+class LoggedInUserChangePassword(APIView):
+    serializer_class = UserChangePasswordSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def put(self, request):
+        user = request.user
+        serializer = self.serializer_class(user, data=request.data)
+        valid = serializer.is_valid(raise_exception=True)
+
+        if valid:
+            serializer.update(user, serializer.validated_data)
+            status_code = status.HTTP_200_OK
+
+            response = {
+                'success': True,
+                'statusCode': status_code,
+                'message': 'Password successfully changed'
+            }
+
+            return Response(response, status=status_code)
 
 class LoggedInUserView(APIView):
     serializer_class = LoggedInUserSerializer

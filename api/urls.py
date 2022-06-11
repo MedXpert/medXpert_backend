@@ -9,6 +9,7 @@ from .views import (
     AuthUserLoginView,
     UserListView,
     LoggedInUserView,
+    LoggedInUserChangePassword
 )
 app_name = 'authentication'
 
@@ -37,5 +38,6 @@ urlpatterns = [
     path('auth/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/register', AuthUserRegistrationView.as_view(), name='register'),
     path('auth/login', AuthUserLoginView.as_view(), name='login'),
-    path('auth/user', LoggedInUserView.as_view(), name='user')
+    path('auth/user', LoggedInUserView.as_view(), name='user'),
+    path('auth/user/password', LoggedInUserChangePassword.as_view(), name='password'),
 ]

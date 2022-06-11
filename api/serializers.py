@@ -6,6 +6,7 @@ from django.contrib.auth.models import update_last_login
 from .models import User, HealthProfile, Address, Admin, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models import Users # This line should be uncommented when the Users class in models.py is uncommented
 from rest_framework import serializers
+from django.contrib.auth.hashers import check_password
 
 # This class should be uncommented when importing Users is uncommented
 class UsersSerializer(serializers.ModelSerializer):
@@ -126,13 +127,23 @@ class LoggedInUserSerializer(serializers.ModelSerializer):
             'phoneNumber',
             'dateOfBirth',
             'role'
-        )
-    
+        ) 
     
     def update(self, instance, validated_data):
         instance.update(**validated_data)
-        # print("The instance" , instance)
-        # print("The validated data", validated_data)
+
+class UserChangePasswordSerializer(serializers.Serializer):
+    oldPassword = serializers.CharField(required=True)
+    newPassword = serializers.CharField(required=True)
+    
+    def update(self, instance, validated_data):
+        # check password is correct
+        if check_password(validated_data['oldPassword'], instance.password):
+            instance.set_password(validated_data['newPassword'])
+            instance.save()
+            return instance
+        raise serializers.ValidationError('Password is incorrect')
+
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -141,6 +152,7 @@ class UserLoginSerializer(serializers.Serializer):
     refresh = serializers.CharField(read_only=True)
     role = serializers.CharField(read_only=True)
     uid = serializers.UUIDField(read_only=True)
+
     def create(self, validated_date):
         pass
 
