@@ -177,7 +177,7 @@ class Appointment(models.Model):
         ('user', 'User'),
         ('healthfacility', 'HealthFacility'),
     )
-
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User,default=None, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
     healthFacility = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
     dateTime = models.DateTimeField(blank=False)

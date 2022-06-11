@@ -7,6 +7,7 @@ from rest_framework_simplejwt import views as jwt_views
 from .views import (
     AuthUserRegistrationView,
     AuthUserLoginView,
+    AppointmentsView,
     AppointmentView,
     LoggedInUserView,
     NearbyHealthCareFacilityView,
@@ -39,7 +40,8 @@ urlpatterns = [
     path('auth/user/password', LoggedInUserChangePassword.as_view(), name='password'),
 
     # appointment view
-    path('appointments/<int:healthFacilityId>', AppointmentView.as_view(), name='appointment'),
+    path('appointments/<int:healthFacilityId>', AppointmentsView.as_view(), name='appointments'),
+    path('appointment/<int:appointmentId>', AppointmentView.as_view(), name='appointment'),
     
     #recommendation endpoints
     path('healthcarefacility/nearyby/', NearbyHealthCareFacilityView.as_view(), name='nearby'), 

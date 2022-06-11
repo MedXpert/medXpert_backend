@@ -22,7 +22,7 @@ from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 # from .serializers import UserSerializer
 from .models import User, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 # from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import LoggedInUserSerializer, UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
+from .serializers import LoggedInUserSerializer, AppointmentUpdateSerializer,UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -255,7 +255,7 @@ class LoggedInUserView(APIView):
         return Response(response, status=status_code)
 
 
-class AppointmentView(APIView):
+class AppointmentsView(APIView):
     serializer_class = AppointmentSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -266,13 +266,15 @@ class AppointmentView(APIView):
             return []
 
     def get(self, request, healthFacilityId):
-        appointments = self.get_object(healthFacilityId, request.user.id)
+        appointments = Appointment.objects.filter(healthFacility_id=healthFacilityId, user_id=request.user.id)
+
+        serializer = self.serializer_class([appointment for appointment in appointments], many=True)
 
         response = {
             'success': True,
             'status_code': status.HTTP_200_OK,
             'message': 'Successfully fetched appointment',
-            'appointments': appointments
+            'appointments': serializer.data
 
         }
         return Response(response, status=status.HTTP_200_OK)
@@ -281,12 +283,11 @@ class AppointmentView(APIView):
         try:
             healthFacility = HealthCareFacility.objects.get(id=healthFacilityId)
             newAppointment = {
-                'user': request.user,
-                'healthFacility': healthFacility,
+                'user_id': request.user.id,
+                'healthFacility_id': healthFacility.id,
                 'dateTime': request.data['dateTime'],
                 'status': request.data['status'],
                 'reminderStatus': request.data['reminderStatus'],
-                'cancelledBy': ''
             }
             serializer=self.serializer_class(data = newAppointment)
             valid=serializer.is_valid()
@@ -302,7 +303,64 @@ class AppointmentView(APIView):
                 }
 
                 return Response(response, status=status_code)
+            else:
+                status_code=status.HTTP_400_BAD_REQUEST
+                response={
+                    'success': False,
+                    'statusCode': status_code,
+                    'message': 'Appointment not created',
+                    'errors': serializer.errors
+                }
+
+                return Response(response, status=status_code)
         except HealthCareFacility.DoesNotExist:
             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Health facility does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-        # serializer = self.serializer_class(data=newAppointment)
-        # valid = serializer.is_valid()
+    
+
+class AppointmentView(APIView):
+    serializer_class = AppointmentUpdateSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, appointmentId):
+        try:
+            return Appointment.objects.get(id=appointmentId)
+        except Appointment.DoesNotExist:
+             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, appointmentId):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            valid = serializer.is_valid(raise_exception=True)
+
+            if valid:
+                appointment = Appointment.objects.filter(id=appointmentId)
+                serializer.update(appointment, serializer.validated_data)
+                status_code = status.HTTP_200_OK
+
+                response = {
+                    'success': True,
+                    'statusCode': status_code,
+                    'message': 'Appointment updated successfully',
+                    'appointment': serializer.data
+                }
+
+                return Response(response, status=status_code)
+        except Appointment.DoesNotExist:
+             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+ 
+           
+    def delete(self, request, appointmentId):
+        try:
+            appointment = self.get_object(appointmentId)
+            appointment.delete()
+            status_code = status.HTTP_200_OK
+
+            response = {
+                'success': True,
+                'statusCode': status_code,
+                'message': 'Appointment deleted successfully'
+            }
+
+            return Response(response, status=status_code)
+        except Appointment.DoesNotExist:
+            return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)

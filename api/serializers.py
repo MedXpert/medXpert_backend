@@ -184,12 +184,12 @@ class UserLoginSerializer(serializers.Serializer):
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid login credentials")
 
-class AppointmentSerializer(serializers.Serializer):
+class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = (
-            'user',
-            'healthFacility',
+            'user_id',
+            'healthFacility_id',
             'dateTime',
             'status',
             'reminderStatus',
@@ -199,3 +199,25 @@ class AppointmentSerializer(serializers.Serializer):
     def create(self, validate_data):
         appointment = Appointment.objects.create(**validate_data)
         return appointment
+
+
+class AppointmentUpdateSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        kwargs['partial'] = True
+        super(AppointmentUpdateSerializer, self).__init__(*args, **kwargs)
+    class Meta:
+        model = Appointment
+        fields = (
+            'status',
+            'reminderStatus',
+            'cancelledBy'
+        )
+    
+    def update(self, instance, validated_data):
+        print(instance, validated_data)
+        instance.update(**validated_data)
+        return instance
+
+    def delete(self, instance):
+        instance.delete()
+        return instance
