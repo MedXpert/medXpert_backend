@@ -151,11 +151,11 @@ DATABASES = {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
 
-        'NAME': db_name,
+        'NAME': "medxpert",
 
-        'USER': db_user,
+        'USER': "postgres",
 
-        'PASSWORD': db_password,
+        'PASSWORD': "mike123",
 
         'HOST': 'localhost',
 
