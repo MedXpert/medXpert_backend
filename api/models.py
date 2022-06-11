@@ -10,8 +10,8 @@ from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
-from django.utils.timezone import make_aware
 from django.utils import timezone
+
 
 # Create your models here.
 
@@ -95,29 +95,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'user'
         verbose_name_plural = 'users'
-# class Users(models.Model):
-
-#     firstName = models.CharField(max_length=50)
-#     lastName = models.CharField(max_length=50)
-#     email = models.CharField(max_length=100)
-#     phoneNumber = PhoneNumberField(null=False, blank=False, unique=True)
-#     username = models.CharField(max_length=50, unique=True)
-#     password = models.CharField(max_length=50)
-#     profilePicture = models.ImageField()
-#     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
-#     dateOfBirth = models.DateField()
-#     sex = models.CharField(max_length=1, choices=SEX_CHOICES)
-#     healthProfileID = models.ForeignKey(HealthProfile, on_delete=models.CASCADE)
-#     address = models.ForeignKey(Address, on_delete=models.CASCADE)
-#     additionalAttributes = models.CharField(max_length=500)
-
-#     USERNAME_FIELD = 'username'
-#     PASSWORD_FIELD = 'password'
-#     REQUIRED_FIELDS = []
-
-#     def __str__(self):
-#         return self.firstName + " " + self.lastName
-
 
 class HealthFacilityAccount(models.Model):
     healthFacilityOrAmbulanceID = models.ForeignKey('api.AmbulanceService', on_delete=models.CASCADE)
@@ -190,11 +167,23 @@ class HealthCareFacility(models.Model):
         self.save()
 
 class Appointment(models.Model):
-    #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
-    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
-    healthFacilityType = models.CharField(max_length=100)
-    dateTime = models.DateTimeField()
-    status = models.CharField(max_length=50)
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('cancelled', 'Cancelled'),
+    )
+
+    CANCELLED_BY_CHOICES = (
+        ('user', 'User'),
+        ('healthfacility', 'HealthFacility'),
+    )
+
+    user = models.ForeignKey(User,default=None, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
+    healthFacility = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    dateTime = models.DateTimeField(blank=False)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
+    reminderStatus = models.BooleanField(default=False)
+    cancelledBy = models.CharField(max_length=50, choices=CANCELLED_BY_CHOICES, default='user', null=True)
 
 class UserRating(models.Model):
     #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
@@ -227,7 +216,7 @@ class AmbulanceService(models.Model):
     name = models.CharField(max_length=100)
     branch = models.CharField(max_length=100)
     description = models.CharField(max_length=200)
-    address = models.ForeignKey(Admin, on_delete=models.CASCADE)
+    address = models.ForeignKey(User, on_delete=models.CASCADE)
     averageRating = models.FloatField()
     GPSCoordinates = models.CharField(max_length=100)
     verificationStatus = models.CharField(max_length=50)

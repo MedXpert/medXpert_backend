@@ -7,19 +7,17 @@ from rest_framework_simplejwt import views as jwt_views
 from .views import (
     AuthUserRegistrationView,
     AuthUserLoginView,
-    UserListView,
+    AppointmentView,
     LoggedInUserView,
-    NearbyHealthCareFacilityView
+    NearbyHealthCareFacilityView,
+    LoggedInUserChangePassword
 )
-app_name = 'authentication'
 
 router = routers.DefaultRouter()
 router.register(r'Users', views.UsersViewSet) # This line should be uncommented when the UsersViewSet is uncommented in the views.py
 router.register(r'HealthProfile', views.HealthProfileViewSet)
-# router.register(r'Address', views.AddressViewSet)
 router.register(r'HealthFacilityAccount', views.HealthFacilityAccountViewSet)
 router.register(r'HealthCareFacility', views.HealthCareFacilityViewSet)
-router.register(r'Appointment', views.AppointmentViewSet)
 router.register(r'UserRating', views.UserRatingViewSet)
 router.register(r'UserReview', views.UserReviewViewSet)
 router.register(r'ReviewComment', views.ReviewCommentViewSet)
@@ -38,5 +36,9 @@ urlpatterns = [
     path('auth/register', AuthUserRegistrationView.as_view(), name='register'),
     path('healthcarefacility/nearyby/', NearbyHealthCareFacilityView.as_view(), name='nearby'), #!
     path('auth/login', AuthUserLoginView.as_view(), name='login'),
-    path('auth/user', LoggedInUserView.as_view(), name='user')
+    path('auth/user', LoggedInUserView.as_view(), name='user'),
+    path('auth/user/password', LoggedInUserChangePassword.as_view(), name='password'),
+
+    # appointment view
+    path('appointments/<int:healthFacilityId>', AppointmentView.as_view(), name='appointment'),
 ]

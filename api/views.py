@@ -1,3 +1,7 @@
+import email
+from os import stat
+from urllib import response
+from django.http import Http404
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -10,10 +14,8 @@ from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 #from .serializers import UserSerializer
 from .models import User, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import LoggedInUserSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
-#from .serializers import UsersSerializer # This line should be uncommented when UsersSerializer is uncommented in the serializers.py file
+from .serializers import LoggedInUserSerializer, UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
 
-# The code below should be uncommented once the above import is uncommented
 class UsersViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all().order_by('firstName')
@@ -26,18 +28,10 @@ from .serializers import (
     UserListSerializer
 )
 
-from .models import User as AuthUser
-
 class HealthProfileViewSet(viewsets.ModelViewSet):
-
     queryset = HealthProfile.objects.all()
     serializer_class = HealthProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-# class AddressViewSet(viewsets.ModelViewSet):
-#     queryset = Address.objects.all()
-#     serializer_class = AddressSerializer
-#     permission_classes = [permissions.IsAuthenticated]
 
 class HealthFacilityAccountViewSet(viewsets.ModelViewSet):
     queryset = HealthFacilityAccount.objects.all()
@@ -49,10 +43,6 @@ class HealthCareFacilityViewSet(viewsets.ModelViewSet):
     serializer_class = HealthCareFacilitySerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class AppointmentViewSet(viewsets.ModelViewSet):
-    queryset = Appointment.objects.all()
-    serializer_class = AppointmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 class UserRatingViewSet(viewsets.ModelViewSet):
     queryset = UserRating.objects.all()
@@ -104,7 +94,6 @@ class SleepHistoryViewSet(viewsets.ModelViewSet):
     serializer_class = SleepHistorySerializer
     permission_classes = [permissions.IsAuthenticated]
 
-
 class AuthUserRegistrationView(APIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = (AllowAny, )
@@ -125,6 +114,8 @@ class AuthUserRegistrationView(APIView):
             }
 
             return Response(response, status=status_code)
+    
+
 
 
 class AuthUserLoginView(APIView):
@@ -169,10 +160,11 @@ class UserListView(APIView):
         }
         return Response(response, status=status.HTTP_200_OK)
 
-#!
+
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.contrib.gis.db.models.functions import Distance
+
 class NearbyHealthCareFacilityView(APIView):
     serializer_class = NearbyHealthCareFacilitySerializer
     permission_classes = (AllowAny,)#(IsAuthenticated, )
@@ -195,17 +187,27 @@ class NearbyHealthCareFacilityView(APIView):
         }
         return Response(response, status=status_code)
 
-# def NearbyHealthCareFacilityView(request, limit):
-    # userCoord = Point(request.data['coordinates'], srid=4326)
-    # res = HealthCareFacility.objects.filter(GPSCoordinates__distance_lte=(userCoord,D(m=1000))).annotate(distance=Distance("GPSCoordinates", userCoord)).order_by('distance')[0:request.args['limit']]
-    # serializer = self.serializer_class(data=request.data)
 
-    # status_code = status.HTTP_200_OK
-    # return {
-    #     'success': True,
-    #     'statusCode': status_code,
-    #     'data': []
-    # }
+class LoggedInUserChangePassword(APIView):
+    serializer_class = UserChangePasswordSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def put(self, request):
+        user = request.user
+        serializer = self.serializer_class(user, data=request.data)
+        valid = serializer.is_valid(raise_exception=True)
+
+        if valid:
+            serializer.update(user, serializer.validated_data)
+            status_code = status.HTTP_200_OK
+
+            response = {
+                'success': True,
+                'statusCode': status_code,
+                'message': 'Password successfully changed'
+            }
+
+            return Response(response, status=status_code)
 
 class LoggedInUserView(APIView):
     serializer_class = LoggedInUserSerializer
@@ -222,3 +224,67 @@ class LoggedInUserView(APIView):
 
         }
         return Response(response, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid()
+        user = User.objects.filter(email=request.user.email)
+        serializer.update(user, request.data)
+        status_code = status.HTTP_200_OK
+
+        response = {
+            'success': True,
+            'statusCode': status_code,
+            'message': 'User updated successfully',
+            'user': serializer.data
+        }
+
+        return Response(response, status=status_code)
+
+class AppointmentView(APIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, healthFacilityId, userId):
+        try:
+            return Appointment.objects.get(user_id=userId,healthFacility_id=healthFacilityId)
+        except Appointment.DoesNotExist:
+            return []
+
+    def get(self, request, healthFacilityId):
+        print(request.user)
+        appointments = self.get_object(healthFacilityId, request.user.id)
+    
+        response = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'message': 'Successfully fetched appointment',
+            'appointments': appointments
+
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    def post(self, request, healthFacilityId):
+        newAppointment = {
+            'user': request.user.id,
+            'healthFacility': healthFacilityId,
+            'dateTime': request.data['dateTime'],
+            'status': 'pending',
+            'reminderStatus': request.data['reminderStatus'],
+        }   
+        serializer = self.serializer_class(data=newAppointment)
+        valid = serializer.is_valid()
+
+        if valid:
+            serializer.save()
+            status_code = status.HTTP_201_CREATED
+            
+            response = {
+                'success': True,
+                'statusCode': status_code,
+                'message': 'Appointment successfully created'
+            }
+
+            return Response(response, status=status_code)
+        
+        return Response({'message: "Wrong Data'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
