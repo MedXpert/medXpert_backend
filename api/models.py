@@ -116,12 +116,12 @@ class HealthCareFacility(models.Model):
         (USER, 'User'),
         (ADMIN, 'Admin'),
     ]
-    name = models.CharField(max_length=150)
+    name = models.TextField()
     address = models.TextField(blank=True, null=True)
     phoneNumbers = ArrayField(PhoneNumberField(unique=True, null=True),null=True, blank=True)
     faxNumbers = ArrayField(PhoneNumberField(unique=True, null=True),null=True, blank=True)
     email = models.EmailField(blank=False, null=False) #!log... #emilf.. will be back when py reconnects
-    website = models.TextField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
     
     imageGallaryLinks = ArrayField(models.URLField(), null=True, blank=True) #links
     imageGallaryPhotos = ArrayField(models.ImageField(), null=True, blank=True) #photos
@@ -135,7 +135,7 @@ class HealthCareFacility(models.Model):
     
     GPSCoordinates = models.PointField(spatial_index=True,null=True, blank=True)
 
-    branch = models.CharField(max_length=100, blank=True, null=True)
+    branch = models.TextField(blank=True, null=True)
     description = models.TextField(max_length=500, blank=True, null=True)
     
     averageRating = models.FloatField(null=True) #...c #nar = ((oar * tr)+nr)/(tr+1)

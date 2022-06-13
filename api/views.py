@@ -167,7 +167,7 @@ from django.contrib.gis.db.models.functions import Distance
 
 class NearbyHealthCareFacilityView(APIView):
     serializer_class = NearbyHealthCareFacilitySerializer
-    permission_classes = (AllowAny,)#(IsAuthenticated, )
+    permission_classes = (IsUser,) #, IsAmbulance), #(IsAuthenticated, ) # (AllowAny,)
 
     def get(self, request):
         limit = int(request.query_params.get('limit',None) or 10)

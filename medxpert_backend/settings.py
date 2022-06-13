@@ -12,22 +12,10 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
 import os
 
-db_name = os.getenv('MEDXPERT_DB_NAME')
-db_user = os.getenv('MEDXPERT_DB_USER')
-db_password = os.getenv('MEDXPERT_DB_PASSWORD')
-# import os
-# if os.name == 'nt':
-#     import platform
-#     OSGEO4W = r"C:\OSGeo4W"
-#     if '64' in platform.architecture()[0]:
-#         OSGEO4W += "64"
-#     assert os.path.isdir(OSGEO4W), "Directory does not exist: " + OSGEO4W
-#     os.environ['OSGEO4W_ROOT'] = OSGEO4W
-#     os.environ['GDAL_DATA'] = OSGEO4W + r"\share\gdal"
-#     os.environ['PROJ_LIB'] = OSGEO4W + r"\share\proj"
-#     os.environ['PATH'] = OSGEO4W + r"\bin;" + os.environ['PATH']
+load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -141,6 +129,7 @@ DEFAULT_FROM_EMAIL = 'default from email'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+
 DATABASES = {
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
@@ -151,11 +140,11 @@ DATABASES = {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
 
-        'NAME': "medxpert",
+        'NAME': os.getenv('MEDXPERT_DB_NAME'),#"medxpert",
 
-        'USER': "postgres",
+        'USER': os.getenv('MEDXPERT_DB_USER'),#"postgres",
 
-        'PASSWORD': "mike123",
+        'PASSWORD': os.getenv('MEDXPERT_DB_PASSWORD'),#"mike123",
 
         'HOST': 'localhost',
 
