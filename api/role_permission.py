@@ -5,7 +5,7 @@ class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
         if getattr(user, 'role', None) is None:
-            return False
+            return False #anonymous user
         if user.role == 'ad':
             return True
 
@@ -16,19 +16,30 @@ class IsAmbulance(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
         if getattr(user, 'role', None) is None:
-            return False
+            return False #anonymous user
         if user.role == 'am':
             return True
 
         return False
 
 class IsUser(permissions.BasePermission):
+    
+    def has_permission(self, request, view):
+        user = request.user
+        if getattr(user, 'role', None) is None:
+            return False #anonymous user
+        if user.role == 'u':
+            return True
+
+        return False
+
+class IsUserOrAmbulance(permissions.BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
         if getattr(user, 'role', None) is None:
-            return False
-        if user.role == 'u':
+            return False #anonymous user
+        if user.role in ('u', 'am'):
             return True
 
         return False
@@ -36,7 +47,7 @@ class IsUser(permissions.BasePermission):
 class IsHealthFacility(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        user = request.user
+        user = request.user #anonymous user
         if user.role == 'h':
             return True
 

@@ -10,7 +10,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import permissions, status
 from rest_framework import viewsets
 
-from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
+from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility, IsUserOrAmbulance
 #from .serializers import UserSerializer
 from .models import User, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
@@ -167,7 +167,7 @@ from django.contrib.gis.db.models.functions import Distance
 
 class NearbyHealthCareFacilityView(APIView):
     serializer_class = NearbyHealthCareFacilitySerializer
-    permission_classes = (IsUser,) #, IsAmbulance), #(IsAuthenticated, ) # (AllowAny,)
+    permission_classes = (IsUserOrAmbulance, ) #(IsUser, IsAmbulance) #(AllowAny,) #todo => is user or ambulance
 
     def get(self, request):
         limit = int(request.query_params.get('limit',None) or 10)
