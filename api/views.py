@@ -15,7 +15,7 @@ from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility, IsU
 from .models import User, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
 from .serializers import LoggedInUserSerializer, UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
-
+# from rest_framework_simplejwt.views import TokenObtainPairView
 class UsersViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all().order_by('firstName')
@@ -288,3 +288,7 @@ class AppointmentView(APIView):
             return Response(response, status=status_code)
         
         return Response({'message: "Wrong Data'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# class CustomJWTokenView(TokenObtainPairView):
+#     serializer_class = CustomJWTokenSerializer

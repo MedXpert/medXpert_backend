@@ -1,5 +1,5 @@
 from dataclasses import field
-from re import U
+from re import T, U
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import update_last_login
@@ -160,7 +160,55 @@ class UserChangePasswordSerializer(serializers.Serializer):
         raise serializers.ValidationError('Password is incorrect')
 
 
-class UserLoginSerializer(serializers.Serializer):
+# class UserLoginSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     password = serializers.CharField(max_length=128, write_only=True)
+#     access = serializers.CharField(read_only=True)
+#     refresh = serializers.CharField(read_only=True)
+#     role = serializers.CharField(read_only=True)
+#     uid = serializers.UUIDField(read_only=True)
+
+#     def create(self, validated_date):
+#         pass
+
+#     def update(self, instance, validated_data):
+#         pass
+
+#     def validate(self, data):
+#         email = data['email']
+#         password = data['password']
+#         user = authenticate(email=email, password=password)
+
+#         if user is None:
+#             raise serializers.ValidationError("Invalid login credentials")
+
+#         try:
+#             refresh = RefreshToken.for_user(user)
+
+#             refresh['role'] = user.role
+
+#             refresh_token = str(refresh)
+#             access_token = str(refresh.access_token)
+
+#             update_last_login(None, user)
+
+#             validation = {
+#                 'access': access_token,
+#                 'refresh': refresh_token,
+#                 'email': user.email,
+#                 'uid': user.uid,
+#                 'role': user.role,
+#             }
+
+#             return validation
+            
+#         except User.DoesNotExist:
+#             raise serializers.ValidationError("Invalid login credentials")
+
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+# class CustomJWTokenSerializer(TokenObtainPairSerializer):
+class UserLoginSerializer(TokenObtainPairSerializer):
     email = serializers.EmailField()
     password = serializers.CharField(max_length=128, write_only=True)
     access = serializers.CharField(read_only=True)
@@ -168,6 +216,12 @@ class UserLoginSerializer(serializers.Serializer):
     role = serializers.CharField(read_only=True)
     uid = serializers.UUIDField(read_only=True)
 
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['role'] = user.role
+        return token
+    
     def create(self, validated_date):
         pass
 
@@ -183,11 +237,11 @@ class UserLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid login credentials")
 
         try:
-            refresh = RefreshToken.for_user(user)
+            refresh = self.get_token(user)
             refresh_token = str(refresh)
             access_token = str(refresh.access_token)
 
-            update_last_login(None, user)
+            # update_last_login(None, user)
 
             validation = {
                 'access': access_token,
