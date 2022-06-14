@@ -33,7 +33,8 @@ router.register(r'SleepHistory', views.SleepHistoryViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     # path('auth/token/obtain/', CustomJWTokenView.as_view(), name='token_create'),
-    path('auth/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'), #tested but postman trial...
+    path('auth/logout/', jwt_views.TokenBlacklistView.as_view(), name='token_blacklist'), #! cron job flushexpiredtokens...
     path('auth/register', AuthUserRegistrationView.as_view(), name='register'),
     path('healthcarefacility/nearyby/', NearbyHealthCareFacilityView.as_view(), name='nearby'), #!
     path('auth/login', AuthUserLoginView.as_view(), name='login'),
