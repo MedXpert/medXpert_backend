@@ -412,4 +412,52 @@ class EmergencyContactsView(APIView):
             }
 
             return Response(response, status=status_code)
+
+class EmergencyContactView(APIView):
+    serializer_class = EmergencyContactsSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, emergencyContactId):
+        try:
+            return EmergencyContacts.objects.get(id=emergencyContactId)
+        except EmergencyContacts.DoesNotExist:
+             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Emergency contact does not exist"}, status=status.HTTP_400_BAD_REQUEST)
     
+    def put(self, request, emergencyContactId):
+
+        try:
+            serializer = self.serializer_class(data=request.data)
+            valid = serializer.is_valid(raise_exception=True)
+
+            if valid:
+                emergencyContact = EmergencyContacts.objects.filter(id=emergencyContactId)
+                serializer.update(emergencyContact, serializer.validated_data)
+                status_code = status.HTTP_200_OK
+
+                response = {
+                    'success': True,
+                    'statusCode': status_code,
+                    'message': 'Emergency contact updated successfully',
+                    'emergencyContact': serializer.data
+                }
+
+                return Response(response, status=status_code)
+        except EmergencyContacts.DoesNotExist:
+             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Emergency contact does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, emergencyContactId):
+        try:
+            emergencyContact = self.get_object(emergencyContactId)
+            print(emergencyContact)
+            emergencyContact.delete()
+            status_code = status.HTTP_200_OK
+
+            response = {
+                'success': True,
+                'statusCode': status_code,
+                'message': 'Emergency contact deleted successfully'
+            }
+
+            return Response(response, status=status_code)
+        except EmergencyContacts.DoesNotExist:
+            return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Emergency contact does not exist"}, status=status.HTTP_400_BAD_REQUEST)

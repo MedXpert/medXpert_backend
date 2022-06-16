@@ -250,6 +250,14 @@ class EmergencyContactsSerializer(serializers.ModelSerializer):
             emergencyContact = EmergencyContacts.objects.create(**validate_data)
             return emergencyContact
 
+    def update(self, instance, validated_data):
+        print(instance, validated_data)
+        instance.update(**validated_data)
+        return instance
+
+    def delete(self, instance):
+        instance.delete()
+        return instance
 
 class AppointmentUpdateSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
