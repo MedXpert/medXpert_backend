@@ -20,16 +20,16 @@ from rest_framework import viewsets
 
 from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 # from .serializers import UserSerializer
-from .models import User, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .models import User, EmergencyContacts,HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 # from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import LoggedInUserSerializer, AppointmentUpdateSerializer,UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
+from .serializers import LoggedInUserSerializer, EmergencyContactsSerializer, AppointmentUpdateSerializer,UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
 
 
 class UsersViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all().order_by('firstName')
     serializer_class = UsersSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class HealthProfileViewSet(viewsets.ModelViewSet):
@@ -364,3 +364,52 @@ class AppointmentView(APIView):
             return Response(response, status=status_code)
         except Appointment.DoesNotExist:
             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+class EmergencyContactsView(APIView):
+    serializer_class = EmergencyContactsSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        emergencyContact = EmergencyContacts.objects.filter(user_id=request.user.id)
+        print(emergencyContact)
+        serializer = self.serializer_class([emergencyContact for emergencyContact in emergencyContact], many=True)
+        # serializer = self.serializer_class(emergencyContact)
+        response = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'message': 'Successfully fetched emergency contact',
+            'emergencyContact': serializer.data
+
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+
+        serializer=self.serializer_class(data = request.data)
+
+        valid=serializer.is_valid()
+        if valid:
+            data = request.data
+            data['user_id'] = request.user.id
+            serializer.create(data)
+            status_code=status.HTTP_201_CREATED
+
+            response={
+                'success': True,
+                'statusCode': status_code,
+                'message': 'Emergency contact created successfully',
+                'emergencyContact': serializer.data
+            }
+
+            return Response(response, status=status_code)
+        else:
+            status_code=status.HTTP_400_BAD_REQUEST
+            response={
+                'success': False,
+                'statusCode': status_code,
+                'message': 'Emergency contact not created',
+                'errors': serializer.errors
+            }
+
+            return Response(response, status=status_code)
+    

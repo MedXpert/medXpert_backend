@@ -11,7 +11,8 @@ from .views import (
     AppointmentView,
     LoggedInUserView,
     NearbyHealthCareFacilityView,
-    LoggedInUserChangePassword
+    LoggedInUserChangePassword,
+    EmergencyContactsView,
 )
 
 router = routers.DefaultRouter()
@@ -45,4 +46,5 @@ urlpatterns = [
     
     #recommendation endpoints
     path('healthcarefacility/nearyby/', NearbyHealthCareFacilityView.as_view(), name='nearby'), 
+    path('emergencycontacts/', EmergencyContactsView.as_view(), name='emergencycontacts'),
 ]

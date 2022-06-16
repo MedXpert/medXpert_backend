@@ -18,6 +18,7 @@ from django.utils import timezone
 from .manager import CustomUserManager
 
 
+
 class Task(models.Model):
     title = models.CharField(max_length=200)
     completed = models.BooleanField(default=False, blank=True, null=True)
@@ -37,6 +38,20 @@ class HealthProfile(models.Model):
 
     def __str__(self):
         return self.healthConditions
+
+class EmergencyContacts(models.Model):
+
+    CONTACT_TYPE = (
+        ('email', 'Email',),
+        ('phone', 'Phone',),
+    )
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    phone_number = PhoneNumberField(blank=True)
+    email = models.EmailField(blank=True)
+    type = models.CharField(max_length=10, choices=CONTACT_TYPE)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
 
 class User(AbstractBaseUser, PermissionsMixin):
 
