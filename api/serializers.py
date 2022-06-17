@@ -251,7 +251,6 @@ class EmergencyContactsSerializer(serializers.ModelSerializer):
             return emergencyContact
 
     def update(self, instance, validated_data):
-        print(instance, validated_data)
         instance.update(**validated_data)
         return instance
 
@@ -273,7 +272,6 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        print(instance, validated_data)
         instance.update(**validated_data)
         return instance
 
