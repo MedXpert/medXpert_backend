@@ -377,8 +377,9 @@ class EmergencyContactsView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
+        type = request.query_params.get('type', None)
         emergencyContact = EmergencyContacts.objects.filter(
-            user_id=request.user.id)
+            user_id=request.user.id, type=type or 'email')
         print(emergencyContact)
         serializer = self.serializer_class(
             [emergencyContact for emergencyContact in emergencyContact], many=True)
