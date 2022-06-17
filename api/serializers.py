@@ -112,7 +112,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validate_data):
-        auth_user = User.objects.create_user(**validate_data)
+        if validate_data.get('role') == 'ad':
+            auth_user = User.objects.create_superuser(**validate_data)
+        else:
+            auth_user = User.objects.create_user(**validate_data)
         return auth_user
 
 #!

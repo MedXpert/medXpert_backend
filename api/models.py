@@ -92,7 +92,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     modifiedDate = models.DateTimeField(default=timezone.now)
     createdBy = models.EmailField()
     modifiedBy = models.EmailField()
-
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     objects = CustomUserManager()
     
     USERNAME_FIELD = 'email'
