@@ -232,6 +232,7 @@ class EmergencyContactsSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmergencyContacts
         fields = (
+            'id',
             'name',
             'phone_number',
             'email',
@@ -242,9 +243,6 @@ class EmergencyContactsSerializer(serializers.ModelSerializer):
             validate_data['type'] = "phone"
         else:
             validate_data['type'] = "email"
-
-        check = EmergencyContacts.objects.filter(email=validate_data['email'], )
-
         checkExist = EmergencyContacts.objects.filter(Q(user_id=validate_data.get('user_id')) & (Q(phone_number=validate_data.get('phone_number')) | Q(email=validate_data.get('email'))))
 
         if checkExist.count() > 0:

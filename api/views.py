@@ -380,7 +380,6 @@ class EmergencyContactsView(APIView):
         type = request.query_params.get('type', None)
         emergencyContact = EmergencyContacts.objects.filter(
             user_id=request.user.id, type=type or 'email')
-        print(emergencyContact)
         serializer = self.serializer_class(
             [emergencyContact for emergencyContact in emergencyContact], many=True)
         # serializer = self.serializer_class(emergencyContact)
@@ -459,7 +458,7 @@ class EmergencyContactView(APIView):
 
     def delete(self, request, emergencyContactId):
         try:
-            emergencyContact = self.get_object(emergencyContactId)
+            emergencyContact = EmergencyContacts.objects.get(id=emergencyContactId)
             emergencyContact.delete()
             status_code = status.HTTP_200_OK
 
