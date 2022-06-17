@@ -20,9 +20,9 @@ from rest_framework import viewsets
 
 from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility
 # from .serializers import UserSerializer
-from .models import User, EmergencyContacts,HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
+from .models import User, EmergencyContacts, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 # from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import LoggedInUserSerializer, EmergencyContactsSerializer, AppointmentUpdateSerializer,UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
+from .serializers import LoggedInUserSerializer, EmergencyContactsSerializer, AppointmentUpdateSerializer, UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -115,6 +115,10 @@ class AuthUserRegistrationView(APIView):
     permission_classes = (AllowAny, )
 
     def post(self, request):
+
+        checkEmail = User.objects.filter(email=request.data['email'])
+        if checkEmail.count() > 0:
+            return Response({'error': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(data=request.data)
         valid = serializer.is_valid(raise_exception=True)
 
@@ -266,9 +270,11 @@ class AppointmentsView(APIView):
             return []
 
     def get(self, request, healthFacilityId):
-        appointments = Appointment.objects.filter(healthFacility_id=healthFacilityId, user_id=request.user.id)
+        appointments = Appointment.objects.filter(
+            healthFacility_id=healthFacilityId, user_id=request.user.id)
 
-        serializer = self.serializer_class([appointment for appointment in appointments], many=True)
+        serializer = self.serializer_class(
+            [appointment for appointment in appointments], many=True)
 
         response = {
             'success': True,
@@ -281,7 +287,8 @@ class AppointmentsView(APIView):
 
     def post(self, request, healthFacilityId):
         try:
-            healthFacility = HealthCareFacility.objects.get(id=healthFacilityId)
+            healthFacility = HealthCareFacility.objects.get(
+                id=healthFacilityId)
             newAppointment = {
                 'user_id': request.user.id,
                 'healthFacility_id': healthFacility.id,
@@ -289,13 +296,13 @@ class AppointmentsView(APIView):
                 'status': request.data['status'],
                 'reminderStatus': request.data['reminderStatus'],
             }
-            serializer=self.serializer_class(data = newAppointment)
-            valid=serializer.is_valid()
+            serializer = self.serializer_class(data=newAppointment)
+            valid = serializer.is_valid()
             if valid:
                 serializer.create(newAppointment)
-                status_code=status.HTTP_201_CREATED
+                status_code = status.HTTP_201_CREATED
 
-                response={
+                response = {
                     'success': True,
                     'statusCode': status_code,
                     'message': 'Appointed successfully',
@@ -304,8 +311,8 @@ class AppointmentsView(APIView):
 
                 return Response(response, status=status_code)
             else:
-                status_code=status.HTTP_400_BAD_REQUEST
-                response={
+                status_code = status.HTTP_400_BAD_REQUEST
+                response = {
                     'success': False,
                     'statusCode': status_code,
                     'message': 'Appointment not created',
@@ -315,7 +322,7 @@ class AppointmentsView(APIView):
                 return Response(response, status=status_code)
         except HealthCareFacility.DoesNotExist:
             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Health facility does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-    
+
 
 class AppointmentView(APIView):
     serializer_class = AppointmentUpdateSerializer
@@ -325,8 +332,8 @@ class AppointmentView(APIView):
         try:
             return Appointment.objects.get(id=appointmentId)
         except Appointment.DoesNotExist:
-             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-    
+            return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
     def put(self, request, appointmentId):
         try:
             serializer = self.serializer_class(data=request.data)
@@ -346,9 +353,8 @@ class AppointmentView(APIView):
 
                 return Response(response, status=status_code)
         except Appointment.DoesNotExist:
-             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
- 
-           
+            return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
     def delete(self, request, appointmentId):
         try:
             appointment = self.get_object(appointmentId)
@@ -365,14 +371,17 @@ class AppointmentView(APIView):
         except Appointment.DoesNotExist:
             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class EmergencyContactsView(APIView):
     serializer_class = EmergencyContactsSerializer
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        emergencyContact = EmergencyContacts.objects.filter(user_id=request.user.id)
+        emergencyContact = EmergencyContacts.objects.filter(
+            user_id=request.user.id)
         print(emergencyContact)
-        serializer = self.serializer_class([emergencyContact for emergencyContact in emergencyContact], many=True)
+        serializer = self.serializer_class(
+            [emergencyContact for emergencyContact in emergencyContact], many=True)
         # serializer = self.serializer_class(emergencyContact)
         response = {
             'success': True,
@@ -382,19 +391,19 @@ class EmergencyContactsView(APIView):
 
         }
         return Response(response, status=status.HTTP_200_OK)
-    
+
     def post(self, request):
 
-        serializer=self.serializer_class(data = request.data)
+        serializer = self.serializer_class(data=request.data)
 
-        valid=serializer.is_valid()
+        valid = serializer.is_valid()
         if valid:
             data = request.data
             data['user_id'] = request.user.id
             serializer.create(data)
-            status_code=status.HTTP_201_CREATED
+            status_code = status.HTTP_201_CREATED
 
-            response={
+            response = {
                 'success': True,
                 'statusCode': status_code,
                 'message': 'Emergency contact created successfully',
@@ -403,8 +412,8 @@ class EmergencyContactsView(APIView):
 
             return Response(response, status=status_code)
         else:
-            status_code=status.HTTP_400_BAD_REQUEST
-            response={
+            status_code = status.HTTP_400_BAD_REQUEST
+            response = {
                 'success': False,
                 'statusCode': status_code,
                 'message': 'Emergency contact not created',
@@ -412,6 +421,7 @@ class EmergencyContactsView(APIView):
             }
 
             return Response(response, status=status_code)
+
 
 class EmergencyContactView(APIView):
     serializer_class = EmergencyContactsSerializer
@@ -421,8 +431,8 @@ class EmergencyContactView(APIView):
         try:
             return EmergencyContacts.objects.get(id=emergencyContactId)
         except EmergencyContacts.DoesNotExist:
-             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Emergency contact does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-    
+            return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Emergency contact does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
     def put(self, request, emergencyContactId):
 
         try:
@@ -430,7 +440,8 @@ class EmergencyContactView(APIView):
             valid = serializer.is_valid(raise_exception=True)
 
             if valid:
-                emergencyContact = EmergencyContacts.objects.filter(id=emergencyContactId)
+                emergencyContact = EmergencyContacts.objects.filter(
+                    id=emergencyContactId)
                 serializer.update(emergencyContact, serializer.validated_data)
                 status_code = status.HTTP_200_OK
 
@@ -443,8 +454,8 @@ class EmergencyContactView(APIView):
 
                 return Response(response, status=status_code)
         except EmergencyContacts.DoesNotExist:
-             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Emergency contact does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Emergency contact does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
     def delete(self, request, emergencyContactId):
         try:
             emergencyContact = self.get_object(emergencyContactId)
