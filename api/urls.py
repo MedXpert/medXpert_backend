@@ -11,7 +11,9 @@ from .views import (
     AppointmentView,
     LoggedInUserView,
     NearbyHealthCareFacilityView,
-    LoggedInUserChangePassword
+    LoggedInUserChangePassword,
+    SearchHealthCareFacilityView,
+    UserRatingView
 )
 
 router = routers.DefaultRouter()
@@ -36,11 +38,31 @@ urlpatterns = [
     path('auth/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'), #tested but postman trial...
     path('auth/logout/', jwt_views.TokenBlacklistView.as_view(), name='token_blacklist'), #! cron job flushexpiredtokens...
     path('auth/register', AuthUserRegistrationView.as_view(), name='register'),
-    path('healthcarefacility/nearyby/', NearbyHealthCareFacilityView.as_view(), name='nearby'), #!
     path('auth/login', AuthUserLoginView.as_view(), name='login'),
     path('auth/user', LoggedInUserView.as_view(), name='user'),
     path('auth/user/password', LoggedInUserChangePassword.as_view(), name='password'),
 
     # appointment view
     path('appointments/<int:healthFacilityId>', AppointmentView.as_view(), name='appointment'),
+
+    # search hfs
+    path('healthcarefacility/search/', SearchHealthCareFacilityView.as_view(), name="search health care facilities"),
+
+    # nearby hfs
+    path('healthcarefacility/nearyby/', NearbyHealthCareFacilityView.as_view(), name='nearby'), #!
+
+    # ratings
+        # update/add new rating to health care facility (by logged in user)
+        # fetch rating of logged in user to health care facility
+    path('rating/<int:healthFacilityId>', UserRatingView.as_view(), name = "upsert rating")
+        # fetch all ratings (all users, all health care facilities for rec) (IsRecServer...?... with api key huh?...)
+    # path('ratings/', Ratings.as_view(), name="ratings")    
+
+
+    # reviews
+        # new review to a health care facility (by logged in user) (no 's')
+    # path('review/<int:healthFacilityId>')
+        # fetch reviews of a health care facility (with 's')
+    # path('reviews/<int:healthFacilityId>')
+
 ]

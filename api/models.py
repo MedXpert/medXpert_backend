@@ -186,20 +186,20 @@ class Appointment(models.Model):
     cancelledBy = models.CharField(max_length=50, choices=CANCELLED_BY_CHOICES, default='user', null=True)
 
 class UserRating(models.Model):
-    #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
     healthFacility = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
     rating = models.IntegerField()
-    healthFacilityType = models.CharField(max_length=100)
-    creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
-    lastUpdateTime = models.DateTimeField(default=datetime.now, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # healthFacilityType = models.CharField(max_length=100, null=True)
+    creationDateTime = models.DateTimeField(default=timezone.now, blank=True)
+    lastUpdateTime = models.DateTimeField(default=timezone.now, blank=True)
 
     def save(self, *args, **kwargs):
         self.healthFacility.update_average_rating(self.rating)
         super().save(*args,**kwargs)
 
 class UserReview(models.Model):
-    #userID = models.ForeignKey(Users, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
-    healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    healthFacility = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
     review = models.CharField(max_length=200)
     healthFacilityType = models.CharField(max_length=100)
     creationDateTime = models.DateTimeField(default=datetime.now, blank=True)

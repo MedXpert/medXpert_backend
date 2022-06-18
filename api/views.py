@@ -14,7 +14,7 @@ from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility, IsU
 #from .serializers import UserSerializer
 from .models import User, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
-from .serializers import LoggedInUserSerializer, UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer
+from .serializers import LoggedInUserSerializer, UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer, SearchHealthCareFacilitySerializer
 # from rest_framework_simplejwt.views import TokenObtainPairView
 class UsersViewSet(viewsets.ModelViewSet):
 
@@ -170,11 +170,12 @@ class NearbyHealthCareFacilityView(APIView):
     permission_classes = (IsUserOrAmbulance, ) #(IsUser, IsAmbulance) #(AllowAny,) #todo => is user or ambulance
 
     def get(self, request):
+        offset = int(request.query_params.get('offset',None) or 0)
         limit = int(request.query_params.get('limit',None) or 10)
         max_distance = int(request.query_params.get('max_distance',None) or 3000)
         coord = list(request.query_params['coordinates'].split(","))
         userCoord = Point(float(coord[0]),float(coord[1]), srid=4326)
-        res = HealthCareFacility.objects.filter(GPSCoordinates__distance_lte=(userCoord,D(m=max_distance))).annotate(distance=Distance("GPSCoordinates", userCoord)).order_by('distance')[0:limit]
+        res = HealthCareFacility.objects.filter(GPSCoordinates__distance_lte=(userCoord,D(m=max_distance))).annotate(distance=Distance("GPSCoordinates", userCoord)).order_by('distance')[offset:limit]
         data = [self.serializer_class(r).data for r in res]
         # serializer = self.serializer_class(data=res.values())
         # valid = serializer.is_valid(raise_exception=True)
@@ -186,6 +187,60 @@ class NearbyHealthCareFacilityView(APIView):
             'data': data
         }
         return Response(response, status=status_code)
+
+
+class SearchHealthCareFacilityView(APIView):
+    serializer_class = SearchHealthCareFacilitySerializer
+    permission_classes = (IsUser,)
+    def get(self, request):
+        status_code = status.HTTP_200_OK
+        search_term = request.query_params.get('q',None)
+        if search_term in [None, '']:
+            return Response({}, status=status_code)
+        
+        offset = int(request.query_params.get('offset',None) or 0)
+        limit = int(request.query_params.get('limit',None) or 10)
+
+        res = HealthCareFacility.objects.filter(name__icontains=search_term)[offset:limit]
+        data = [self.serializer_class(r).data for r in res]
+        # serializer = self.serializer_class(data=res.values())
+        # valid = serializer.is_valid(raise_exception=True)
+
+        response =  {
+            'success': True,
+            'statusCode': status_code,
+            'data': data
+        }
+        return Response(response, status=status_code)
+class UserRatingView(APIView):
+    # serializer_class = UpsertUserRatingSerializer
+    permission_classes = (IsUser,)
+    def get(self, healthFacilityId, request):
+        pass
+    def post(self, healthFacilityId, request):
+        pass
+
+
+        status_code = status.HTTP_200_OK
+        search_term = request.query_params.get('q',None)
+        if search_term is None:
+            return Response({}, status=status_code)
+        
+        offset = int(request.query_params.get('offset',None) or 0)
+        limit = int(request.query_params.get('limit',None) or 10)
+
+        res = HealthCareFacility.objects.filter(name__icontains=search_term)[offset:limit]
+        data = [self.serializer_class(r).data for r in res]
+        # serializer = self.serializer_class(data=res.values())
+        # valid = serializer.is_valid(raise_exception=True)
+
+        response =  {
+            'success': True,
+            'statusCode': status_code,
+            'data': data
+        }
+        return Response(response, status=status_code)
+
 
 
 class LoggedInUserChangePassword(APIView):
@@ -287,7 +342,7 @@ class AppointmentView(APIView):
 
             return Response(response, status=status_code)
         
-        return Response({'message: "Wrong Data'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'message: "Wrong Data'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) #? 400
 
 
 # class CustomJWTokenView(TokenObtainPairView):

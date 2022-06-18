@@ -124,6 +124,12 @@ class NearbyHealthCareFacilitySerializer(serializers.ModelSerializer):
         model = HealthCareFacility
         fields = "__all__"
 
+
+class SearchHealthCareFacilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HealthCareFacility
+        fields = '__all__'
+
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
