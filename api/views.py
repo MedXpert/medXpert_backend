@@ -176,7 +176,7 @@ class UserListView(APIView):
 
 class NearbyHealthCareFacilityView(APIView):
     serializer_class = NearbyHealthCareFacilitySerializer
-    permission_classes = (IsUserOrAmbulance, ) #(IsUser, IsAmbulance) #(AllowAny,) #todo => is user or ambulance
+    permission_classes = (IsAuthenticated,) 
 
     def get(self, request):
         offset = int(request.query_params.get('offset',None) or 0)
