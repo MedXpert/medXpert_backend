@@ -8,19 +8,22 @@ from rest_framework_simplejwt import views as jwt_views
 from .views import (
     AuthUserRegistrationView,
     AuthUserLoginView,
+    AppointmentsView,
     AppointmentView,
     LoggedInUserView,
     NearbyHealthCareFacilityView,
     LoggedInUserChangePassword,
     SearchHealthCareFacilityView,
-    UserRatingView
+    UserRatingView,
+    EmergencyContactsView,
+    EmergencyContactView,
 )
 
 router = routers.DefaultRouter()
 router.register(r'Users', views.UsersViewSet) # This line should be uncommented when the UsersViewSet is uncommented in the views.py
 router.register(r'HealthProfile', views.HealthProfileViewSet)
 router.register(r'HealthFacilityAccount', views.HealthFacilityAccountViewSet)
-router.register(r'HealthCareFacility', views.HealthCareFacilityViewSet)
+router.register(r'healthCareFacility', views.HealthCareFacilityViewSet)
 router.register(r'UserRating', views.UserRatingViewSet)
 router.register(r'UserReview', views.UserReviewViewSet)
 router.register(r'ReviewComment', views.ReviewCommentViewSet)
@@ -65,4 +68,9 @@ urlpatterns = [
         # fetch reviews of a health care facility (with 's')
     # path('reviews/<int:healthFacilityId>')
 
+    path('appointments/<int:healthFacilityId>', AppointmentsView.as_view(), name='appointments'),
+    path('appointment/<int:appointmentId>', AppointmentView.as_view(), name='appointment'),
+    
+    path('emergencycontacts/', EmergencyContactsView.as_view(), name='emergencycontacts'),
+    path('emergencycontact/<int:emergencyContactId>', EmergencyContactView.as_view(), name='emergencycontact'),
 ]
