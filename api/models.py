@@ -139,7 +139,7 @@ class HealthCareFacility(models.Model):
     description = models.TextField(max_length=500, blank=True, null=True)
     
     averageRating = models.FloatField(null=True) #...c #nar = ((oar * tr)+nr)/(tr+1)
-    total_ratings = models.IntegerField(null=True) #count
+    totalRatings = models.IntegerField(null=True) #count
 
     # source = models.CharField(max_length=100, null=True)
     tags = ArrayField(models.CharField(max_length=100, blank=True), null=True, blank=True)
@@ -158,13 +158,19 @@ class HealthCareFacility(models.Model):
     averageNumberOfUsers = models.FloatField(null=True, blank=True) #calc
     additionalAttributes =  models.CharField(max_length=500, null=True)
 
-    def update_average_rating(self, new_rating):
-        if not (isinstance(self.averageRating, float) and isinstance(self.total_ratings, int)): #r
+    def updateAverageRating(self, new_rating, updated=False, previous_rating=0):
+        if not (isinstance(self.averageRating, float) and isinstance(self.totalRatings, int)): #r
             self.averageRating = 0
-            self.total_ratings = 0
-        self.averageRating = ((self.averageRating * self.total_ratings)+new_rating) / (self.total_ratings + 1)
-        self.total_ratings += 1
+            self.totalRatings = 0
+        new_rating = float(new_rating)
+        rating_change = new_rating - float(previous_rating)
+        totalRatings_increment = 1
+        if new_rating == 0:
+            totalRatings_increment = -1
+        self.totalRatings = self.totalRatings if updated else (self.totalRatings + totalRatings_increment)
+        self.averageRating = ((self.averageRating * self.totalRatings)+rating_change) / (self.totalRatings)
         self.save()
+
 
 class Appointment(models.Model):
     STATUS_CHOICES = (
@@ -194,7 +200,7 @@ class UserRating(models.Model):
     lastUpdateTime = models.DateTimeField(default=timezone.now, blank=True)
 
     def save(self, *args, **kwargs):
-        self.healthFacility.update_average_rating(self.rating)
+        # self.healthFacility.updateAverageRating(self.rating)
         super().save(*args,**kwargs)
 
 class UserReview(models.Model):
