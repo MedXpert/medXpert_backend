@@ -45,8 +45,6 @@ urlpatterns = [
     path('auth/user', LoggedInUserView.as_view(), name='user'),
     path('auth/user/password', LoggedInUserChangePassword.as_view(), name='password'),
 
-    # appointment view
-    path('appointments/<int:healthFacilityId>', AppointmentView.as_view(), name='appointment'),
 
     # search hfs
     path('healthcarefacility/search/', SearchHealthCareFacilityView.as_view(), name="search health care facilities"),
@@ -57,7 +55,7 @@ urlpatterns = [
     # ratings
         # update/add new rating to health care facility (by logged in user)
         # fetch rating of logged in user to health care facility
-    path('rating/<int:healthFacilityId>', UserRatingView.as_view(), name = "upsert rating")
+    path('rating/<int:healthFacilityId>', UserRatingView.as_view(), name = "upsert rating"),
         # fetch all ratings (all users, all health care facilities for rec) (IsRecServer...?... with api key huh?...)
     # path('ratings/', Ratings.as_view(), name="ratings")    
 
@@ -68,6 +66,7 @@ urlpatterns = [
         # fetch reviews of a health care facility (with 's')
     # path('reviews/<int:healthFacilityId>')
 
+    # appointment view
     path('appointments/<int:healthFacilityId>', AppointmentsView.as_view(), name='appointments'),
     path('appointment/<int:appointmentId>', AppointmentView.as_view(), name='appointment'),
     

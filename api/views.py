@@ -422,7 +422,8 @@ class AppointmentView(APIView):
 
             return Response(response, status=status_code)
         
-        return Response({'message: "Wrong Data'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) #? 400
+        except Appointment.DoesNotExist:
+            return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Appointment does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EmergencyContactsView(APIView):
