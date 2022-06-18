@@ -8,19 +8,22 @@ from rest_framework_simplejwt import views as jwt_views
 from .views import (
     AuthUserRegistrationView,
     AuthUserLoginView,
+    AppointmentsView,
     AppointmentView,
     LoggedInUserView,
     NearbyHealthCareFacilityView,
     LoggedInUserChangePassword,
     SearchHealthCareFacilityView,
-    UserRatingView
+    UserRatingView,
+    EmergencyContactsView,
+    EmergencyContactView,
 )
 
 router = routers.DefaultRouter()
 router.register(r'Users', views.UsersViewSet) # This line should be uncommented when the UsersViewSet is uncommented in the views.py
 router.register(r'HealthProfile', views.HealthProfileViewSet)
 router.register(r'HealthFacilityAccount', views.HealthFacilityAccountViewSet)
-router.register(r'HealthCareFacility', views.HealthCareFacilityViewSet)
+router.register(r'healthCareFacility', views.HealthCareFacilityViewSet)
 router.register(r'UserRating', views.UserRatingViewSet)
 router.register(r'UserReview', views.UserReviewViewSet)
 router.register(r'ReviewComment', views.ReviewCommentViewSet)
@@ -42,8 +45,6 @@ urlpatterns = [
     path('auth/user', LoggedInUserView.as_view(), name='user'),
     path('auth/user/password', LoggedInUserChangePassword.as_view(), name='password'),
 
-    # appointment view
-    path('appointments/<int:healthFacilityId>', AppointmentView.as_view(), name='appointment'),
 
     # search hfs
     path('healthcarefacility/search/', SearchHealthCareFacilityView.as_view(), name="search health care facilities"),
@@ -54,7 +55,7 @@ urlpatterns = [
     # ratings
         # update/add new rating to health care facility (by logged in user)
         # fetch rating of logged in user to health care facility
-    path('rating/<int:healthFacilityId>', UserRatingView.as_view(), name = "upsert rating")
+    path('rating/<int:healthFacilityId>', UserRatingView.as_view(), name = "upsert rating"),
         # fetch all ratings (all users, all health care facilities for rec) (IsRecServer...?... with api key huh?...)
     # path('ratings/', Ratings.as_view(), name="ratings")    
 
@@ -65,4 +66,10 @@ urlpatterns = [
         # fetch reviews of a health care facility (with 's')
     # path('reviews/<int:healthFacilityId>')
 
+    # appointment view
+    path('appointments/<int:healthFacilityId>', AppointmentsView.as_view(), name='appointments'),
+    path('appointment/<int:appointmentId>', AppointmentView.as_view(), name='appointment'),
+    
+    path('emergencycontacts/', EmergencyContactsView.as_view(), name='emergencycontacts'),
+    path('emergencycontact/<int:emergencyContactId>', EmergencyContactView.as_view(), name='emergencycontact'),
 ]

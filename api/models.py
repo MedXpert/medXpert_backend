@@ -18,6 +18,7 @@ from django.utils import timezone
 from .manager import CustomUserManager
 
 
+
 class Task(models.Model):
     title = models.CharField(max_length=200)
     completed = models.BooleanField(default=False, blank=True, null=True)
@@ -38,15 +39,19 @@ class HealthProfile(models.Model):
     def __str__(self):
         return self.healthConditions
 
-# class Address(models.Model):
-#     houseNumber = models.CharField(max_length=10)
-#     kebele = models.IntegerField()
-#     subCity = models.CharField(max_length=50)
-#     regionOrCity = models.CharField(max_length=50)
-#     country = models.CharField(max_length=70)
+class EmergencyContacts(models.Model):
 
-#     def __str__(self):
-#         return self.houseNumber
+    CONTACT_TYPE = (
+        ('email', 'Email',),
+        ('phone', 'Phone',),
+    )
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    phone_number = PhoneNumberField(blank=True)
+    email = models.EmailField(blank=True)
+    type = models.CharField(max_length=10, choices=CONTACT_TYPE)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
 
 class User(AbstractBaseUser, PermissionsMixin):
 
@@ -87,7 +92,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     modifiedDate = models.DateTimeField(default=timezone.now)
     createdBy = models.EmailField()
     modifiedBy = models.EmailField()
-
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     objects = CustomUserManager()
     
     USERNAME_FIELD = 'email'
@@ -144,7 +150,7 @@ class HealthCareFacility(models.Model):
     # source = models.CharField(max_length=100, null=True)
     tags = ArrayField(models.CharField(max_length=100, blank=True), null=True, blank=True)
 
-    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE, null=True) #removed?
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True) #removed?
     # creationDateTime = models.DateTimeField(default=make_aware(datetime.now), null=True)
     creationDateTime = models.DateTimeField(default=timezone.now)
     # creationDateTime = models.DateTimeField(auto_now_add=True)
@@ -156,7 +162,6 @@ class HealthCareFacility(models.Model):
     # capacity = models.CharField(max_length=100, null=True)
     doctorCount =  models.IntegerField(null=True, blank=True)
     averageNumberOfUsers = models.FloatField(null=True, blank=True) #calc
-    additionalAttributes =  models.CharField(max_length=500, null=True)
 
     def updateAverageRating(self, new_rating, updated=False, previous_rating=0):
         if not (isinstance(self.averageRating, float) and isinstance(self.totalRatings, int)): #r
@@ -183,7 +188,7 @@ class Appointment(models.Model):
         ('user', 'User'),
         ('healthfacility', 'HealthFacility'),
     )
-
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User,default=None, on_delete=models.CASCADE) # This line should be uncommented when the Users class is added
     healthFacility = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
     dateTime = models.DateTimeField(blank=False)
@@ -256,6 +261,7 @@ class HealthCareService(models.Model):
 
 class ClaimRequest(models.Model):
     healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    requesterAccount = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     requesterPhoneNumber = PhoneNumberField(null=False, blank=False)
     requesterFirstName = models.CharField(max_length=100)
     requesterLastName = models.CharField(max_length=100)
