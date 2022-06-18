@@ -17,6 +17,8 @@ from .views import (
     UserRatingView,
     EmergencyContactsView,
     EmergencyContactView,
+    ClaimRequestsView,
+    ClaimRequestView,
 )
 
 router = routers.DefaultRouter()
@@ -30,7 +32,7 @@ router.register(r'ReviewComment', views.ReviewCommentViewSet)
 router.register(r'AmbulanceService', views.AmbulanceServiceViewSet)
 router.register(r'Ambulance', views.AmbulanceViewSet)
 router.register(r'HealthCareService', views.HealthCareServiceViewSet)
-router.register(r'ClaimRequest', views.ClaimRequestViewSet)
+# router.register(r'claimRequest', views.ClaimRequestViewSet)
 router.register(r'Automations', views.AutomationsViewSet)
 router.register(r'HeartRateHistory', views.HeartRateHistoryViewSet)
 router.register(r'SleepHistory', views.SleepHistoryViewSet)
@@ -72,4 +74,7 @@ urlpatterns = [
     
     path('emergencycontacts/', EmergencyContactsView.as_view(), name='emergencycontacts'),
     path('emergencycontact/<int:emergencyContactId>', EmergencyContactView.as_view(), name='emergencycontact'),
+
+    path('claimrequests/', ClaimRequestsView.as_view(), name='claimrequests'),
+    path('claimrequest/<int:claimRequestId>', ClaimRequestView.as_view(), name='claimrequest'),
 ]

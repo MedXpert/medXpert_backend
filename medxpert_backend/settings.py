@@ -212,3 +212,7 @@ PHONENUMBER_DEFAULT_REGION = "ET"
 
 
 # TIME_ZONE = "UTC"
+
+STATIC_URL = os.path.join(BASE_DIR, "static/")
+STATIC_ROOT =  os.path.join(BASE_DIR, "static/")
+MEDIA_URL =  os.path.join(BASE_DIR, "media/")

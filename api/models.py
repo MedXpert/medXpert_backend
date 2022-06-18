@@ -1,5 +1,6 @@
 
 from multiprocessing.dummy import Array
+from operator import mod
 import uuid
 
 # from django.db import models
@@ -254,18 +255,18 @@ class HealthCareService(models.Model):
     Row3 = models.CharField(max_length=100)
 
 class ClaimRequest(models.Model):
+    id = models.AutoField(primary_key=True)
     healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
     requesterAccount = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
-    requesterPhoneNumber = PhoneNumberField(null=False, blank=False)
+    requesterPhoneNumber = models.CharField(max_length=15, null=False, blank=False)
     requesterFirstName = models.CharField(max_length=100)
     requesterLastName = models.CharField(max_length=100)
     requesterEmail = models.CharField(max_length=100)
     message = models.CharField(max_length=500)
     attachment = models.FileField()
     status = models.CharField(max_length=50)
-    isDone = models.CharField(max_length=50)
+    isDone = models.BooleanField(default=False)
     dateTime = models.DateTimeField(default=timezone.now)
-    cancelDateTime = models.DateTimeField()
 
 class Automations(models.Model):
     name = models.CharField(max_length=100)

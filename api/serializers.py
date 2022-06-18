@@ -76,12 +76,6 @@ class HealthCareServiceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ClaimRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClaimRequest
-        fields = "__all__"
-
-
 class AutomationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Automations
@@ -335,6 +329,31 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
         instance.update(**validated_data)
         return instance
 
+    def delete(self, instance):
+        instance.delete()
+        return instance
+
+class ClaimRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClaimRequest
+        fields = (
+            'requesterPhoneNumber',
+            'requesterFirstName',
+            'requesterEmail',
+            'message',
+            'attachment',
+            'healthFacilityID'
+        )
+
+    def create(self, validate_data, user, file):
+        # print(validate_data, user)
+        validate_data['requesterAccount'] = user
+        validate_data['attachment'] = file
+        validate_data['healthFacilityID'] = HealthCareFacility.objects.get(id=validate_data.get('healthFacilityID'))
+        claimRequest = ClaimRequest.objects.create(**validate_data)
+        return claimRequest
+    
     def delete(self, instance):
         instance.delete()
         return instance
