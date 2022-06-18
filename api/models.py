@@ -150,7 +150,7 @@ class HealthCareFacility(models.Model):
     # source = models.CharField(max_length=100, null=True)
     tags = ArrayField(models.CharField(max_length=100, blank=True), null=True, blank=True)
 
-    accountID = models.ForeignKey(HealthFacilityAccount, on_delete=models.CASCADE, null=True) #removed?
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True) #removed?
     # creationDateTime = models.DateTimeField(default=make_aware(datetime.now), null=True)
     creationDateTime = models.DateTimeField(default=timezone.now)
     # creationDateTime = models.DateTimeField(auto_now_add=True)
@@ -162,7 +162,6 @@ class HealthCareFacility(models.Model):
     # capacity = models.CharField(max_length=100, null=True)
     doctorCount =  models.IntegerField(null=True, blank=True)
     averageNumberOfUsers = models.FloatField(null=True, blank=True) #calc
-    additionalAttributes =  models.CharField(max_length=500, null=True)
 
     def update_average_rating(self, new_rating):
         if not (isinstance(self.averageRating, float) and isinstance(self.total_ratings, int)): #r
@@ -256,6 +255,7 @@ class HealthCareService(models.Model):
 
 class ClaimRequest(models.Model):
     healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
+    requesterAccount = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     requesterPhoneNumber = PhoneNumberField(null=False, blank=False)
     requesterFirstName = models.CharField(max_length=100)
     requesterLastName = models.CharField(max_length=100)
