@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import permissions, status
 from rest_framework import viewsets
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility, IsUserOrAmbulance
 #from .serializers import UserSerializer
 from .models import User, EmergencyContacts, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
@@ -524,7 +524,7 @@ class EmergencyContactView(APIView):
 class ClaimRequestsView(APIView):
     serializer_class = ClaimRequestSerializer
     permission_classes = (IsAuthenticated,)
-    parser_classes = (MultiPartParser ,)
+    parser_classes = (MultiPartParser , FormParser)
 
     def get(self, request):
         claimType = request.query_params.get('claim', None)
@@ -548,11 +548,12 @@ class ClaimRequestsView(APIView):
         serializer = self.serializer_class(data=request.data)
         valid = serializer.is_valid()
         if valid:
-            # serializer.create(serializer.data, user=request.user, file=request.FILES.get('attachment', None))
+            # attachment = request.FILES.get('attachment', None)
+            # attachmentUrl = request.META['HTTP_HOST'] +"/media/claim_attachments/"+ attachment.name
+            # print(attachmentUrl)
+            # serializer.create(serializer.data, user=request.user, attachment=attachment.read())
+            serializer.save()
             status_code = status.HTTP_201_CREATED
-            attachment = request.FILES.get('attachment', None)
-            # content_type = attachment.content_type
-            # response = "POST API and you have uploaded a {} file".format(content_type)
             response = {
                 'success': True,
                 'statusCode': status_code,

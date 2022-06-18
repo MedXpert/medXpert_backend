@@ -257,14 +257,13 @@ class HealthCareService(models.Model):
 class ClaimRequest(models.Model):
     id = models.AutoField(primary_key=True)
     healthFacilityID = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
-    requesterAccount = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    requesterAccount = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
     requesterPhoneNumber = models.CharField(max_length=15, null=False, blank=False)
     requesterFirstName = models.CharField(max_length=100)
     requesterLastName = models.CharField(max_length=100)
     requesterEmail = models.CharField(max_length=100)
     message = models.CharField(max_length=500)
-    attachment = models.FileField()
-    status = models.CharField(max_length=50)
+    attachment = models.FileField(upload_to='claim_attachments/', null=True, blank=True)
     isDone = models.BooleanField(default=False)
     dateTime = models.DateTimeField(default=timezone.now)
 

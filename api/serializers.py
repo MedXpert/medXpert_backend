@@ -340,20 +340,14 @@ class ClaimRequestSerializer(serializers.ModelSerializer):
         fields = (
             'requesterPhoneNumber',
             'requesterFirstName',
+            'requesterLastName',
             'requesterEmail',
             'message',
             'attachment',
+            'requesterAccount_id',
             'healthFacilityID'
         )
 
-    def create(self, validate_data, user, file):
-        # print(validate_data, user)
-        validate_data['requesterAccount'] = user
-        validate_data['attachment'] = file
-        validate_data['healthFacilityID'] = HealthCareFacility.objects.get(id=validate_data.get('healthFacilityID'))
-        claimRequest = ClaimRequest.objects.create(**validate_data)
-        return claimRequest
-    
     def delete(self, instance):
         instance.delete()
         return instance
