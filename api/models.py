@@ -125,7 +125,7 @@ class HealthCareFacility(models.Model):
     phoneNumbers = ArrayField(PhoneNumberField(unique=True, null=True),null=True, blank=True)
     faxNumbers = ArrayField(PhoneNumberField(unique=True, null=True),null=True, blank=True)
     email = models.EmailField(blank=False, null=False) #!log... #emilf.. will be back when py reconnects
-    website = models.URLField(blank=True, null=True)
+    website = models.CharField(max_length=200,blank=True, null=True)
     
     imageGallaryLinks = ArrayField(models.URLField(), null=True, blank=True) #links
     imageGallaryPhotos = ArrayField(models.ImageField(), null=True, blank=True) #photos
