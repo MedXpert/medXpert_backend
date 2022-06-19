@@ -185,7 +185,7 @@ class NearbyHealthCareFacilityView(APIView):
         max_distance = int(request.query_params.get('max_distance',None) or 3000)
         coord = list(request.query_params['coordinates'].split(","))
         userCoord = Point(float(coord[0]),float(coord[1]), srid=4326)
-        res = HealthCareFacility.objects.filter(GPSCoordinates__distance_lte=(userCoord,D(m=max_distance))).annotate(distance=Distance("GPSCoordinates", userCoord)).order_by('distance')[offset:limit]
+        res = HealthCareFacility.objects.filter(GPSCoordinates__distance_lte=(userCoord,D(m=max_distance))).annotate(distance=Distance("GPSCoordinates", userCoord)).order_by('distance')[offset:offset+limit]
         data = [self.serializer_class(r).data for r in res]
         # serializer = self.serializer_class(data=res.values())
         # valid = serializer.is_valid(raise_exception=True)
@@ -224,31 +224,73 @@ class SearchHealthCareFacilityView(APIView):
         return Response(response, status=status_code)
 class UserRatingView(APIView):
     serializer_class = UserRatingSerializer
-    permission_classes = (IsUser,)
-    def delete(self, ratingId, request):
-        rating = UserRating.objects.get(pk=ratingId)
-        rating.delete()
-        rating.healthFacility.updateRating(0, updated=True, previous_rating=rating.rating)
-        response = {
-            'success':True,
-            'message':"Rating deleted successfully."
-        }
-        return Response(response, status=status.HTTP_204_NO_CONTENT)
+    permission_classes = (IsAuthenticated,)
 
-    def get(self,healthFacilityId, request):
-        rating = UserRating.objects.filter(user=request.user.id, healthFacility=healthFacilityId)[0]
+    def post(self, request, healthFacilityId):
+        try:
+            rating = int(request.data['rating'])
+        except:
+            return Response({'success':False}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(data={
+            'healthFacility': healthFacilityId,
+            'user': request.user.id,
+            'rating': rating
+        })
+        is_valid = serializer.is_valid()
+        if is_valid:
+            serializer.save()
+            HealthCareFacility.objects.get(pk=int(healthFacilityId)).updateAverageRating(float(rating))
+            response = {
+                'success':True,
+                'message': "You’ve rated this health care facility successfully.",
+                'data': serializer.data
+            }
+            return Response(response, status=status.HTTP_201_CREATED)
+        return Response({'success':False}, status.HTTP_400_BAD_REQUEST)
+    def get_rating(self, userId,  healthFacilityId):
+        res = UserRating.objects.filter(user=userId, healthFacility=healthFacilityId)
+        if res.count() == 0:
+            return None
+        return res[0]
+    def get(self, request, healthFacilityId):
+        rating = self.get_rating(request.user.id, healthFacilityId)
+        if rating is None:
+            response = {
+                'success':False,
+                'message': "No rating by the user for the health facility with the given id."
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
         response = {
             'success':True,
             'data':self.serializer_class(rating).data
         }
         return Response(response, status=status.HTTP_200_OK)
+    def delete(self, request, healthFacilityId):
+        rating = self.get_rating(request.user.id, healthFacilityId)
+        if rating is None:
+            response = {
+                'success':False,
+                'message': "No rating by the user for the health facility with the given id."
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        rating.healthFacility.updateAverageRating(0, updated=True, previous_rating=rating.rating)
+        rating.delete()
+        response = {
+            'success':True,
+            'message':"Rating deleted successfully."
+        }
+        return Response(response, status=status.HTTP_200_OK)
 
-    def put(self, ratingId, request):
+# class UpdateUserRatingView(APIView):
+    # serializer_class = UserRatingSerializer
+    # permission_classes = (IsUser,)
+    # def put(self, request, ratingId):
+    def put(self, request,healthFacilityId):
         try:
-            updatedRating = float(request.body['rating'])
+            updatedRating = float(request.data['rating'])
         except:
             return Response({'success':False}, status=status.HTTP_400_BAD_REQUEST)
-        rating = UserRating.objects.get(pk=ratingId)
+        rating = self.get_rating(request.user.id, healthFacilityId)
         previous_rating = rating.rating
         rating.rating = updatedRating
         rating.save()
@@ -258,26 +300,95 @@ class UserRatingView(APIView):
             'message':"Rating updated successfully."
         }
         return Response(response, status.HTTP_200_OK)
+class UserReviewView(APIView):
+    serializer_class = UserReviewSerializer
+    permission_classes = (IsAuthenticated,)
 
-    def post(self, healthFacilityId, request):
-        rating = request.body['rating']
+    def post(self, request, healthFacilityId):
+        try:
+            review = request.data['review']
+        except:
+            return Response({'success':False}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(data={
             'healthFacility': healthFacilityId,
             'user': request.user.id,
-            'rating': rating
+            'review': review
         })
         is_valid = serializer.is_valid()
         if is_valid:
             serializer.save()
-            HealthCareFacility.objects.get(pk=healthFacilityId).updateAverageRating(float(rating))
             response = {
                 'success':True,
-                'message': "You’ve rated this health care facility successfully.",
+                'message': "You’ve reviewed this health care facility successfully.",
                 'data': serializer.data
             }
             return Response(response, status=status.HTTP_201_CREATED)
         return Response({'success':False}, status.HTTP_400_BAD_REQUEST)
+    def get_review(self, userId,  healthFacilityId):
+        res = UserReview.objects.filter(user=userId, healthFacility=healthFacilityId)
+        if res.count() == 0:
+            return None
+        return res[0]
+    def get(self, request, healthFacilityId):
+        review = self.get_review(request.user.id, healthFacilityId)
+        if review is None:
+            response = {
+                'success':False,
+                'message': "No review by the user for the health facility with the given id."
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        response = {
+            'success':True,
+            'data':self.serializer_class(review).data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    def delete(self, request, healthFacilityId):
+        review = self.get_review(request.user.id, healthFacilityId)
+        if review is None:
+            response = {
+                'success':False,
+                'message': "No review by the user for the health facility with the given id."
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        review.delete()
+        response = {
+            'success':True,
+            'message':"Review deleted successfully."
+        }
+        return Response(response, status=status.HTTP_200_OK)
 
+    def put(self, request,healthFacilityId):
+        try:
+            updatedReview = request.data['review']
+        except:
+            return Response({'success':False}, status=status.HTTP_400_BAD_REQUEST)
+        review = self.get_review(request.user.id, healthFacilityId)
+        review.review = updatedReview
+        review.save()
+        response = {
+            'success':True,
+            'message':"Review updated successfully."
+        }
+        return Response(response, status.HTTP_200_OK)
+
+class UserReviewsView(APIView):
+    serializer_class = UserReviewSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, healthFacilityId):
+        offset = int(request.query_params.get('offset',None) or 0)
+        limit = int(request.query_params.get('limit',None) or 10)
+        res = UserReview.objects.all()[offset:offset+limit]
+        data = [self.serializer_class(r).data for r in res]
+        # serializer = self.serializer_class(data=res.values())
+        # valid = serializer.is_valid(raise_exception=True)
+        status_code = status.HTTP_200_OK
+        response = {
+            'success': True,
+            'statusCode': status_code,
+            'data': data
+        }
+        return Response(response, status=status_code)
 
 
 class LoggedInUserChangePassword(APIView):

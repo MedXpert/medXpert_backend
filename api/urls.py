@@ -17,6 +17,9 @@ from .views import (
     UserRatingView,
     EmergencyContactsView,
     EmergencyContactView,
+    UserRatingView,
+    UserReviewView,
+    UserReviewsView
 )
 
 router = routers.DefaultRouter()
@@ -55,16 +58,17 @@ urlpatterns = [
     # ratings
         # update/add new rating to health care facility (by logged in user)
         # fetch rating of logged in user to health care facility
-    path('rating/<int:healthFacilityId>', UserRatingView.as_view(), name = "upsert rating"),
+    path('rating/<int:healthFacilityId>', UserRatingView.as_view(), name = "rating"),
         # fetch all ratings (all users, all health care facilities for rec) (IsRecServer...?... with api key huh?...)
     # path('ratings/', Ratings.as_view(), name="ratings")    
 
 
     # reviews
         # new review to a health care facility (by logged in user) (no 's')
-    # path('review/<int:healthFacilityId>')
         # fetch reviews of a health care facility (with 's')
+    path('review/<int:healthFacilityId>', UserReviewView.as_view(), name = "review"),
     # path('reviews/<int:healthFacilityId>')
+    path('reviews/<int:healthFacilityId>', UserReviewsView.as_view(), name = "reviews"),
 
     # appointment view
     path('appointments/<int:healthFacilityId>', AppointmentsView.as_view(), name='appointments'),

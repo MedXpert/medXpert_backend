@@ -11,7 +11,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
-
+from django.db.models.constraints import UniqueConstraint
 
 # Create your models here.
 
@@ -164,7 +164,7 @@ class HealthCareFacility(models.Model):
     averageNumberOfUsers = models.FloatField(null=True, blank=True) #calc
 
     def updateAverageRating(self, new_rating, updated=False, previous_rating=0):
-        if not (isinstance(self.averageRating, float) and isinstance(self.totalRatings, int)): #r
+        if (not isinstance(self.averageRating, float)) and (not (isinstance(self.totalRatings, int)) and (not isinstance(self.totalRatings, float))): #r
             self.averageRating = 0
             self.totalRatings = 0
         new_rating = float(new_rating)
@@ -172,8 +172,12 @@ class HealthCareFacility(models.Model):
         totalRatings_increment = 1
         if new_rating == 0:
             totalRatings_increment = -1
-        self.totalRatings = self.totalRatings if updated else (self.totalRatings + totalRatings_increment)
-        self.averageRating = ((self.averageRating * self.totalRatings)+rating_change) / (self.totalRatings)
+        self.totalRatings = self.totalRatings if (updated and new_rating !=0) else (self.totalRatings + totalRatings_increment)
+        if self.totalRatings !=0:
+            self.averageRating = ((self.averageRating * self.totalRatings)+rating_change) / (self.totalRatings)
+            self.save()
+            return
+        self.averageRating = 0
         self.save()
 
 
@@ -203,19 +207,20 @@ class UserRating(models.Model):
     # healthFacilityType = models.CharField(max_length=100, null=True)
     creationDateTime = models.DateTimeField(default=timezone.now, blank=True)
     lastUpdateTime = models.DateTimeField(default=timezone.now, blank=True)
-
-    def save(self, *args, **kwargs):
-        # self.healthFacility.updateAverageRating(self.rating)
-        super().save(*args,**kwargs)
+    UniqueConstraint(fields=['healthFacility', 'user'], name='unique rating')
+    # def save(self, *args, **kwargs):
+    #     # self.healthFacility.updateAverageRating(self.rating)
+    #     super().save(*args,**kwargs)
 
 class UserReview(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     healthFacility = models.ForeignKey(HealthCareFacility, on_delete=models.CASCADE)
-    review = models.CharField(max_length=200)
-    healthFacilityType = models.CharField(max_length=100)
-    creationDateTime = models.DateTimeField(default=datetime.now, blank=True)
-    lastUpdateTime = models.DateTimeField(default=datetime.now, blank=True)
-
+    review = models.TextField()
+    # healthFacilityType = models.CharField(max_length=100)
+    creationDateTime = models.DateTimeField(default=timezone.now, blank=True)
+    lastUpdateTime = models.DateTimeField(default=timezone.now, blank=True)
+    UniqueConstraint(fields=['healthFacility', 'user'], name='unique review')
+    
 class ReviewComment(models.Model):
     commenterID = models.ForeignKey(UserRating, on_delete=models.CASCADE)
     UserReviewID = models.ForeignKey(UserReview, on_delete=models.CASCADE)
