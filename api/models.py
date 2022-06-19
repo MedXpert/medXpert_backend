@@ -263,7 +263,6 @@ class ClaimRequest(models.Model):
     requesterLastName = models.CharField(max_length=100)
     requesterEmail = models.CharField(max_length=100)
     message = models.CharField(max_length=500)
-    attachment = models.FileField(upload_to='claim_attachments/', null=True, blank=True)
     isDone = models.BooleanField(default=False)
     dateTime = models.DateTimeField(default=timezone.now)
 

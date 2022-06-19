@@ -524,7 +524,6 @@ class EmergencyContactView(APIView):
 class ClaimRequestsView(APIView):
     serializer_class = ClaimRequestSerializer
     permission_classes = (IsAuthenticated,)
-    parser_classes = (MultiPartParser , FormParser)
 
     def get(self, request):
         claimType = request.query_params.get('claim', None)
@@ -548,11 +547,7 @@ class ClaimRequestsView(APIView):
         serializer = self.serializer_class(data=request.data)
         valid = serializer.is_valid()
         if valid:
-            # attachment = request.FILES.get('attachment', None)
-            # attachmentUrl = request.META['HTTP_HOST'] +"/media/claim_attachments/"+ attachment.name
-            # print(attachmentUrl)
-            # serializer.create(serializer.data, user=request.user, attachment=attachment.read())
-            serializer.save()
+            serializer.create(serializer.data, user=request.user)
             status_code = status.HTTP_201_CREATED
             response = {
                 'success': True,
