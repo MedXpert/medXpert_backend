@@ -266,6 +266,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = (
+            'id',
             'user_id',
             'healthFacility_id',
             'dateTime',
@@ -321,6 +322,7 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = (
+            'dateTime',
             'status',
             'reminderStatus',
             'cancelledBy'
