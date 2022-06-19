@@ -534,6 +534,7 @@ class ClaimRequestsView(APIView):
 
         serializer = self.serializer_class([claimRequest for claimRequest in claimRequests], many=True)
         # serializer = self.serializer_class([claimRequest for claimRequest in claimRequests], many=True)
+
         response = {
             'success': True,
             'status_code': status.HTTP_200_OK,
