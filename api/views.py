@@ -1,4 +1,6 @@
 
+from urllib import response
+from certifi import where
 from .serializers import (
     UserRegistrationSerializer,
     UserLoginSerializer,
@@ -23,6 +25,7 @@ import os
 from django.conf import settings
 from requests import request as req
 import logging
+from django.db.models import F
 
 REC_API_KEY = os.getenv('RECOMMENDATION_SERVER_API_KEY')
 REC_URL = settings.RECOMMENDATION_SERVER_URL
@@ -299,7 +302,7 @@ class UserRatingView(APIView):
             'success':True,
             'message':"Rating deleted successfully."
         }
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_204_NO_CONTENT)
 
 # class UpdateUserRatingView(APIView):
     # serializer_class = UserRatingSerializer
@@ -326,6 +329,22 @@ class UserRatingView(APIView):
         }
         return Response(response, status.HTTP_200_OK)
 
+class UserRatingsView(APIView):
+    permission_classes = (AllowAny,)
+    def get(self, request):
+        offset = int(request.query_params.get('offset',None) or 0)
+        limit = request.query_params.get('limit',None)
+        end = (offset + int(limit)) if limit else limit #else None => [:None]=>[:len]
+        key = request.query_params.get('key',None)
+        if (key is None) or (key != os.getenv('API_KEY')):
+            return Response({'success':False}, status=status.HTTP_401_UNAUTHORIZED)
+        rs = UserRating.objects.all().values('rating',healthFacilityID=F('healthFacility'), userID=F('user'))[offset:end]
+        response = {
+            'success':True,
+            'data': rs
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
 class RecommendationsView(APIView):
     def get(self, request):
         offset = int(request.query_params.get('offset',None) or 0)
@@ -342,7 +361,7 @@ class RecommendationsView(APIView):
         result = []
         if len(res) < limit:
             pad = limit - len(res)
-            padding = HealthCareFacility.objects.filter(verificationIndexPer10__gte=5)[:pad] #, id__not_in=res
+            padding = HealthCareFacility.objects.filter(verificationIndexPer10__gte=5).exclude(id__in=res).order_by('-verificationIndexPer10')[:pad] #, id__not_in=res
             padding = [HealthCareFacilitySerializer(h).data for h in padding]
             result.extend(padding)
         res = [HealthCareFacilitySerializer(HealthCareFacility.objects.get(pk=hid)).data for hid in res]
