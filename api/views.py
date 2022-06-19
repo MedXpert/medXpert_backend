@@ -200,7 +200,7 @@ class NearbyHealthCareFacilityView(APIView):
 
 class SearchHealthCareFacilityView(APIView):
     serializer_class = SearchHealthCareFacilitySerializer
-    permission_classes = (IsUser,)
+    permission_classes = (IsAuthenticated,)
     def get(self, request):
         status_code = status.HTTP_200_OK
         search_term = request.query_params.get('q',None)
