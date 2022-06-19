@@ -19,7 +19,13 @@ from .role_permission import IsAdmin, IsUser, IsAmbulance, IsHealthFacility, IsU
 from .models import User, EmergencyContacts, HealthProfile, HealthFacilityAccount, HealthCareFacility, Appointment, UserRating, UserReview, ReviewComment, AmbulanceService, Ambulance, HealthCareService, ClaimRequest, Automations, HeartRateHistory, SleepHistory
 #from .models. import Users # This line should be uncommented once the Users class in models.py is uncommented
 from .serializers import LoggedInUserSerializer, AppointmentUpdateSerializer, EmergencyContactsSerializer, UserChangePasswordSerializer, UsersSerializer, HealthFacilityAccountSerializer, HealthProfileSerializer, HealthCareFacilitySerializer, AmbulanceSerializer, UserRatingSerializer, UserReviewSerializer, AppointmentSerializer, AutomationsSerializer, ClaimRequestSerializer, SleepHistorySerializer, ReviewCommentSerializer, AmbulanceServiceSerializer, HeartRateHistorySerializer, HealthCareServiceSerializer, NearbyHealthCareFacilitySerializer, SearchHealthCareFacilitySerializer
+import os
+from django.conf import settings
+from requests import request as req
+import logging
 
+REC_API_KEY = os.getenv('RECOMMENDATION_SERVER_API_KEY')
+REC_URL = settings.RECOMMENDATION_SERVER_URL
 
 class UsersViewSet(viewsets.ModelViewSet):
 
@@ -228,9 +234,16 @@ class UserRatingView(APIView):
 
     def post(self, request, healthFacilityId):
         try:
-            rating = int(request.data['rating'])
+            rating = float(request.data['rating'])
         except:
             return Response({'success':False}, status=status.HTTP_400_BAD_REQUEST)
+        ratingPrev = self.get_rating(request.user.id, healthFacilityId)
+        if ratingPrev is not None:
+            response = {
+                'success':False,
+                'message': "Rating by the user to the health facility with the given id already exists."
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(data={
             'healthFacility': healthFacilityId,
             'user': request.user.id,
@@ -240,6 +253,12 @@ class UserRatingView(APIView):
         if is_valid:
             serializer.save()
             HealthCareFacility.objects.get(pk=int(healthFacilityId)).updateAverageRating(float(rating))
+            #to rec server
+            full_url = REC_URL + f'rating/{request.user.id}/{healthFacilityId}'
+            rs = req('POST', full_url , params={'key': REC_API_KEY}, json = {'rating':rating})
+            if rs.status_code != 200:
+                logging.debug('POST to Recommendation server failed.', rs.status_code, rs.text)
+            
             response = {
                 'success':True,
                 'message': "You’ve rated this health care facility successfully.",
@@ -268,6 +287,7 @@ class UserRatingView(APIView):
     def delete(self, request, healthFacilityId):
         rating = self.get_rating(request.user.id, healthFacilityId)
         if rating is None:
+            #note: rec will sync on restart (rating will be useful until then)
             response = {
                 'success':False,
                 'message': "No rating by the user for the health facility with the given id."
@@ -295,11 +315,45 @@ class UserRatingView(APIView):
         rating.rating = updatedRating
         rating.save()
         rating.healthFacility.updateAverageRating(rating.rating, updated=True, previous_rating=previous_rating)
+        #to rec server
+        full_url = REC_URL + f'rating/{request.user.id}/{healthFacilityId}'
+        rs = req('PUT', full_url , params={'key': REC_API_KEY}, json = {'rating':updatedRating})
+        if rs.status_code != 200:
+            logging.debug('POST to Recommendation server failed.', rs.status_code, rs.text)
         response = {
             'success':True,
             'message':"Rating updated successfully."
         }
         return Response(response, status.HTTP_200_OK)
+
+class RecommendationsView(APIView):
+    def get(self, request):
+        offset = int(request.query_params.get('offset',None) or 0)
+        limit = int(request.query_params.get('limit',None) or 10)
+        userId = request.user.id
+        full_url = REC_URL + f'recommendations/{userId}'
+        rs = req('GET', full_url , params={'key': REC_API_KEY, 'offset': offset, 'limit':limit})
+        if rs.status_code != 200:
+            logging.debug('GET to Recommendation server failed.', rs.status_code, rs.text)
+            return Response({'success':False}, status=rs.status_code)
+        json = rs.json()
+        res = json['data']
+        res = [int(i) for i in res]
+        result = []
+        if len(res) < limit:
+            pad = limit - len(res)
+            padding = HealthCareFacility.objects.filter(verificationIndexPer10__gte=5)[:pad] #, id__not_in=res
+            padding = [HealthCareFacilitySerializer(h).data for h in padding]
+            result.extend(padding)
+        res = [HealthCareFacilitySerializer(HealthCareFacility.objects.get(pk=hid)).data for hid in res]
+        res.extend(result)
+        response = {
+            'success':True,
+            'data': res
+        }
+        return Response(response, status.HTTP_200_OK)
+
+
 class UserReviewView(APIView):
     serializer_class = UserReviewSerializer
     permission_classes = (IsAuthenticated,)
@@ -378,7 +432,7 @@ class UserReviewsView(APIView):
     def get(self, request, healthFacilityId):
         offset = int(request.query_params.get('offset',None) or 0)
         limit = int(request.query_params.get('limit',None) or 10)
-        res = UserReview.objects.all()[offset:offset+limit]
+        res = UserReview.objects.filter(healthFacility=healthFacilityId)[offset:offset+limit]
         data = [self.serializer_class(r).data for r in res]
         # serializer = self.serializer_class(data=res.values())
         # valid = serializer.is_valid(raise_exception=True)

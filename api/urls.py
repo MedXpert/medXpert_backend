@@ -19,7 +19,8 @@ from .views import (
     EmergencyContactView,
     UserRatingView,
     UserReviewView,
-    UserReviewsView
+    UserReviewsView,
+    RecommendationsView
 )
 
 router = routers.DefaultRouter()
@@ -69,6 +70,9 @@ urlpatterns = [
     path('review/<int:healthFacilityId>', UserReviewView.as_view(), name = "review"),
     # path('reviews/<int:healthFacilityId>')
     path('reviews/<int:healthFacilityId>', UserReviewsView.as_view(), name = "reviews"),
+
+    # get recommendations from recommendation server
+    path('recommendations/', RecommendationsView.as_view(), name = "recommendations"),
 
     # appointment view
     path('appointments/<int:healthFacilityId>', AppointmentsView.as_view(), name='appointments'),
