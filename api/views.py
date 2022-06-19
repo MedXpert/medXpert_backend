@@ -587,7 +587,24 @@ class ClaimRequestView(APIView):
             return Response(response, status=status_code)
         except ClaimRequest.DoesNotExist:
             return Response({"success": False, "status_code": status.HTTP_400_BAD_REQUEST, "message": "Claim request does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+class ClaimedHealthFacilitesView(APIView):
 
+    serializer_class = HealthCareFacilitySerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        healthFacilities = HealthCareFacility.objects.filter(owner=request.user)
+        serializer = self.serializer_class([healthFacility for healthFacility in healthFacilities], many=True)
+        response = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'message': 'Successfully fetched claimed health facilities',
+            'healthFacilities': serializer.data
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
+
+        
 class ClaimRequestViewSet(viewsets.ModelViewSet):
     queryset = ClaimRequest.objects.all()
     serializer_class = ClaimRequestSerializer

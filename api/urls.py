@@ -19,6 +19,7 @@ from .views import (
     EmergencyContactView,
     ClaimRequestsView,
     ClaimRequestView,
+    ClaimedHealthFacilitesView
 )
 
 router = routers.DefaultRouter()
@@ -77,4 +78,6 @@ urlpatterns = [
 
     path('claimrequests/', ClaimRequestsView.as_view(), name='claimrequests'),
     path('claimrequest/<int:claimRequestId>', ClaimRequestView.as_view(), name='claimrequest'),
+
+    path('claimedhealthfacilities/', ClaimedHealthFacilitesView.as_view(), name='claimedhealthfacilities'),
 ]
