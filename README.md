@@ -1,5 +1,5 @@
 # MedXpert
-MedXpert is an online mobile and web-based system mainly intended to increase and improve access to health facilities.
+A mobile and web-based application that will enable users to view, search, get recommendations on, make appointments with, notify, and set up automation to contact health facilities like hospitals, clinics, and ambulances when needing medical attention.
 
 ## Demo
 [Video](https://www.youtube.com/watch?v=djY5PCIWqpk)
